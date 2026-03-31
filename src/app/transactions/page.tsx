@@ -3,7 +3,7 @@
 import { formatEuro } from '@/lib/format';
 import { useEffect, useState } from 'react';
 import SyncButton from '@/components/SyncButton';
-import { Download, X, Trash2, Search, Check } from 'lucide-react';
+import { Download, X, Trash2, Search, Check, Paperclip } from 'lucide-react';
 import Link from 'next/link';
 
 interface Transactie {
@@ -18,6 +18,8 @@ interface Transactie {
   gecategoriseerd: boolean;
   relatie: { id: number; naam: string } | null;
   categorie: { id: number; code: string; naam: string } | null;
+  factuur: { id: number; nummer: string } | null;
+  bijlageNaam: string | null;
 }
 
 interface Categorie {
@@ -227,6 +229,7 @@ export default function TransactiesPage() {
                     <td className="px-4 py-3 text-gray-500">{new Date(tx.datum).toLocaleDateString('nl-NL')}</td>
                     <td className="px-4 py-3">
                       <span className="font-medium text-gray-900">{tx.omschrijving}</span>
+                      {tx.bijlageNaam && <Paperclip className="w-3 h-3 text-gray-400 inline ml-1" />}
                       {tx.relatie && <span className="text-gray-400 ml-2 text-xs">{tx.relatie.naam}</span>}
                     </td>
                     <td className="px-4 py-3">
@@ -243,6 +246,7 @@ export default function TransactiesPage() {
                       {tx.btwBedrag > 0 ? formatEuro(tx.btwBedrag) : '-'}
                     </td>
                     <td className="px-4 py-3">
+                      {tx.factuur && <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs mr-1">{tx.factuur.nummer}</span>}
                       <span className={`px-2 py-1 rounded text-xs ${tx.gecategoriseerd ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                         {tx.gecategoriseerd ? 'Verwerkt' : 'Actie nodig'}
                       </span>
@@ -360,6 +364,29 @@ function EditTransactionModal({ tx, categorieen, relaties, onClose, onSave, onDe
               {relaties.map(r => <option key={r.id} value={r.id}>{r.naam}</option>)}
             </select>
           </div>
+
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Gekoppeld aan factuur</label>
+            {tx.factuur ? (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">{tx.factuur.nummer}</span>
+                <button type="button" onClick={() => {
+                  fetch('/api/transactions', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: tx.id, factuurId: null }),
+                  }).then(() => onSave());
+                }} className="text-xs text-red-500 hover:text-red-700">Ontkoppelen</button>
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400">Niet gekoppeld — koppel vanuit de Facturen pagina</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Bijlage</label>
+            <BijlageUpload transactieId={tx.id} bijlageNaam={tx.bijlageNaam} onUpdate={onSave} />
+          </div>
         </div>
 
         <div className="flex items-center justify-between mt-6 pt-4 border-t">
@@ -453,5 +480,45 @@ function AddTransactionForm({ onSave }: { onSave: () => void }) {
         </div>
       </div>
     </form>
+  );
+}
+
+function BijlageUpload({ transactieId, bijlageNaam, onUpdate }: { transactieId: number; bijlageNaam: string | null; onUpdate: () => void }) {
+  const [uploading, setUploading] = useState(false);
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('transactieId', transactieId.toString());
+    await fetch('/api/transactions/bijlage', { method: 'POST', body: formData });
+    setUploading(false);
+    onUpdate();
+  }
+
+  async function handleDelete() {
+    await fetch(`/api/transactions/bijlage?id=${transactieId}`, { method: 'DELETE' });
+    onUpdate();
+  }
+
+  if (bijlageNaam) {
+    return (
+      <div className="flex items-center gap-2">
+        <a href={`/api/transactions/bijlage?id=${transactieId}`} target="_blank"
+          className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800">
+          <Paperclip className="w-3.5 h-3.5" /> {bijlageNaam}
+        </a>
+        <button onClick={handleDelete} className="text-xs text-red-500 hover:text-red-700">Verwijderen</button>
+      </div>
+    );
+  }
+
+  return (
+    <label className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors ${uploading ? 'opacity-50' : ''}`}>
+      <Paperclip className="w-3.5 h-3.5" /> {uploading ? 'Uploaden...' : 'Bestand toevoegen'}
+      <input type="file" accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx" onChange={handleUpload} className="hidden" disabled={uploading} />
+    </label>
   );
 }

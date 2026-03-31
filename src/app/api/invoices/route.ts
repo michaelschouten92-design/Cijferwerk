@@ -7,7 +7,7 @@ import { genereerFactuurHTML } from '@/lib/invoice-pdf';
  */
 export async function GET() {
   const facturen = await prisma.factuur.findMany({
-    include: { relatie: true, regels: true },
+    include: { relatie: true, regels: true, transacties: { select: { id: true, datum: true, omschrijving: true, bedragExclBtw: true, btwBedrag: true } } },
     orderBy: { datum: 'desc' },
   });
   return NextResponse.json(facturen);

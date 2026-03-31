@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   const transacties = await prisma.transactie.findMany({
     where,
-    include: { relatie: true, categorie: true },
+    include: { relatie: true, categorie: true, factuur: { select: { id: true, nummer: true } } },
     orderBy: { datum: 'desc' },
   });
 

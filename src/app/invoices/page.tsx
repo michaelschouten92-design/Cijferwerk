@@ -2,7 +2,7 @@
 
 import { formatEuro } from '@/lib/format';
 import { useEffect, useState } from 'react';
-import { FileText, Send, X, CheckCircle, Trash2, RotateCcw, RefreshCw } from 'lucide-react';
+import { FileText, Send, X, CheckCircle, Trash2, RotateCcw, RefreshCw, Link2 } from 'lucide-react';
 
 interface Factuur {
   id: number;
@@ -12,6 +12,7 @@ interface Factuur {
   status: string;
   relatie: { id: number; naam: string; email?: string };
   regels: { aantal: number; beschrijving: string; stuksprijs: number; btwPercentage: number }[];
+  transacties?: { id: number; datum: string; omschrijving: string; bedragExclBtw: number; btwBedrag: number }[];
 }
 
 interface Relatie {
@@ -47,6 +48,7 @@ export default function FacturenPage() {
   const [sendModal, setSendModal] = useState<Factuur | null>(null);
   const [markeerModal, setMarkeerModal] = useState<Factuur | null>(null);
   const [deleteModal, setDeleteModal] = useState<Factuur | null>(null);
+  const [koppelModal, setKoppelModal] = useState<Factuur | null>(null);
 
   function load() {
     fetch('/api/invoices').then(r => r.json()).then(setFacturen);
@@ -194,6 +196,11 @@ export default function FacturenPage() {
                         Betaal vóór {new Date(f.vervaldatum).toLocaleDateString('nl-NL')}
                       </span>
                     )}
+                    {f.transacties && f.transacties.length > 0 && (
+                      <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
+                        {f.transacties.length} betaling gekoppeld
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-gray-900">{formatEuro(totaal(f))}</span>
@@ -204,6 +211,10 @@ export default function FacturenPage() {
                     <button onClick={() => setSendModal(f)}
                       className="p-2 text-gray-400 hover:text-green-600 transition-colors" title="Verzenden">
                       <Send className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => setKoppelModal(f)}
+                      className="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Koppel aan transactie">
+                      <Link2 className="w-4 h-4" />
                     </button>
                     <button onClick={() => setMarkeerModal(f)}
                       className="px-3 py-1.5 text-sm text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
@@ -280,6 +291,7 @@ export default function FacturenPage() {
         </div>
       )}
 
+      {koppelModal && <KoppelModal factuur={koppelModal} onClose={() => setKoppelModal(null)} onSave={load} />}
       {sendModal && <SendInvoiceModal factuur={sendModal} onClose={() => setSendModal(null)} />}
       {markeerModal && <MarkeerBetaaldModal factuur={markeerModal} onClose={() => setMarkeerModal(null)} onSave={load} />}
       {deleteModal && (
@@ -614,5 +626,76 @@ function SjabloonForm({ onSave, onCancel }: { onSave: () => void; onCancel: () =
         <button type="submit" className="px-5 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Opslaan</button>
       </div>
     </form>
+  );
+}
+
+function KoppelModal({ factuur, onClose, onSave }: { factuur: Factuur; onClose: () => void; onSave: () => void }) {
+  const [transacties, setTransacties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/transactions?jaar=${new Date().getFullYear()}`).then(r => r.json()).then(data => {
+      // Toon alleen ongekoppelde transacties
+      setTransacties(data.filter((t: any) => !t.factuurId));
+      setLoading(false);
+    });
+  }, []);
+
+  async function koppel(transactieId: number) {
+    await fetch('/api/transactions', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: transactieId, factuurId: factuur.id }),
+    });
+    // Factuur als betaald markeren
+    await fetch('/api/invoices', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: factuur.id, status: 'betaald' }),
+    });
+    onSave();
+    onClose();
+  }
+
+  const factuurTotaal = totaal(factuur);
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-semibold text-gray-900">Koppel betaling aan factuur {factuur.nummer}</h3>
+            <p className="text-sm text-gray-500">Factuurbedrag: {formatEuro(factuurTotaal)}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 space-y-2">
+          {loading && <p className="text-gray-400 text-sm py-4 text-center">Laden...</p>}
+          {!loading && transacties.length === 0 && (
+            <p className="text-gray-400 text-sm py-4 text-center">Geen ongekoppelde transacties gevonden</p>
+          )}
+          {transacties.map((t: any) => {
+            const bedrag = t.bedragExclBtw + t.btwBedrag;
+            const match = Math.abs(bedrag - factuurTotaal) < 0.05;
+            return (
+              <button key={t.id} onClick={() => koppel(t.id)}
+                className={`w-full text-left p-3 rounded-lg border transition-colors ${match ? 'border-green-300 bg-green-50 hover:bg-green-100' : 'border-gray-200 hover:bg-gray-50'}`}>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-sm font-medium text-gray-900">{t.omschrijving}</span>
+                    <span className="text-xs text-gray-400 ml-2">{new Date(t.datum).toLocaleDateString('nl-NL')}</span>
+                  </div>
+                  <span className={`font-medium ${t.richting === 'verkoop' ? 'text-green-600' : 'text-red-600'}`}>
+                    {t.richting === 'verkoop' ? '+' : '-'}{formatEuro(bedrag)}
+                  </span>
+                </div>
+                {match && <span className="text-xs text-green-600 mt-1 block">Bedrag komt overeen</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }

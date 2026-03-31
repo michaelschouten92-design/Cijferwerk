@@ -73,6 +73,9 @@ model Transactie {
   categorieId     Int?
   categorie       Categorie? @relation(fields: [categorieId], references: [id])
   factuurId       Int?
+  factuur         Factuur?  @relation(fields: [factuurId], references: [id])
+  bijlageNaam     String?   // originele bestandsnaam
+  bijlagePad      String?   // pad naar bestand in uploads/
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }
@@ -96,6 +99,7 @@ model Factuur {
   status          String    @default("openstaand") // openstaand | betaald
   createdAt       DateTime  @default(now())
   regels          FactuurRegel[]
+  transacties     Transactie[]
 }
 
 model FactuurRegel {
