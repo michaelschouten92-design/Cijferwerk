@@ -202,31 +202,31 @@ export default function FacturenPage() {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-gray-900">{formatEuro(totaal(f))}</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-bold text-gray-900 mr-1">{formatEuro(totaal(f))}</span>
                     <a href={`/api/invoices/${f.id}/pdf`} target="_blank"
-                      className="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="PDF bekijken">
-                      <FileText className="w-4 h-4" />
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                      <FileText className="w-3.5 h-3.5" /> PDF
                     </a>
                     <button onClick={() => setSendModal(f)}
-                      className="p-2 text-gray-400 hover:text-green-600 transition-colors" title="Verzenden">
-                      <Send className="w-4 h-4" />
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                      <Send className="w-3.5 h-3.5" /> Verzend
                     </button>
                     <button onClick={() => setKoppelModal(f)}
-                      className="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Koppel aan transactie">
-                      <Link2 className="w-4 h-4" />
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                      <Link2 className="w-3.5 h-3.5" /> Koppel
                     </button>
                     <button onClick={() => setMarkeerModal(f)}
-                      className="px-3 py-1.5 text-sm text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
-                      Betaald
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                      <CheckCircle className="w-3.5 h-3.5" /> Betaald
                     </button>
                     <button onClick={() => handleCreditnota(f)}
-                      className="p-2 text-gray-400 hover:text-orange-600 transition-colors" title="Creditnota aanmaken">
-                      <RotateCcw className="w-4 h-4" />
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-gray-400 hover:text-orange-600 transition-colors">
+                      <RotateCcw className="w-3.5 h-3.5" /> Credit
                     </button>
                     <button onClick={() => setDeleteModal(f)}
-                      className="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Verwijderen">
-                      <Trash2 className="w-4 h-4" />
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-gray-400 hover:text-red-600 transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" /> Verwijder
                     </button>
                   </div>
                 </div>

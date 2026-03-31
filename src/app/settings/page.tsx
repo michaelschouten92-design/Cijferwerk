@@ -218,7 +218,24 @@ function SmtpSection() {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
       <h3 className="font-semibold text-gray-900 mb-4">E-mail (SMTP)</h3>
-      <p className="text-sm text-gray-500 mb-4">Configureer SMTP om facturen direct per e-mail te verzenden.</p>
+      <p className="text-sm text-gray-500 mb-3">Configureer SMTP om facturen direct per e-mail te verzenden.</p>
+      <div className="mb-3">
+        <label className="block text-xs text-gray-500 mb-1">Snelle setup</label>
+        <select onChange={e => {
+          const presets: Record<string, { host: string; port: string }> = {
+            gmail: { host: 'smtp.gmail.com', port: '587' },
+            outlook: { host: 'smtp.office365.com', port: '587' },
+            yahoo: { host: 'smtp.mail.yahoo.com', port: '587' },
+          };
+          const p = presets[e.target.value];
+          if (p) setForm({ ...form, smtpHost: p.host, smtpPort: p.port });
+        }} className="w-full px-3 py-1.5 border rounded text-sm" defaultValue="">
+          <option value="">Kies je e-mailprovider...</option>
+          <option value="gmail">Gmail (App-wachtwoord nodig)</option>
+          <option value="outlook">Outlook / Hotmail</option>
+          <option value="yahoo">Yahoo</option>
+        </select>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <div><label className="block text-xs text-gray-500 mb-1">SMTP Host</label><input value={form.smtpHost} onChange={e => setForm({ ...form, smtpHost: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" placeholder="bijv. smtp.gmail.com" /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Poort</label><input value={form.smtpPort} onChange={e => setForm({ ...form, smtpPort: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" placeholder="587" /></div>

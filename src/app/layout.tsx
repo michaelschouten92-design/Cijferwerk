@@ -2,6 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import MobileNav from '@/components/MobileNav';
+import NavLink from '@/components/NavLink';
+import Providers from '@/components/Providers';
 
 export const metadata: Metadata = {
   title: 'Algo Studio — Financieel overzicht',
@@ -37,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             navigator.serviceWorker.register('/sw.js');
           }
         `}} />
+        <Providers>
         <div className="min-h-screen flex">
           {/* Desktop sidebar */}
           <aside className="hidden lg:flex w-56 bg-white border-r border-gray-200 flex-col">
@@ -46,13 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
             <nav className="flex-1 p-3 space-y-0.5">
               {navItems.map(item => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                >
-                  {item.label}
-                </Link>
+                <NavLink key={item.href} href={item.href} label={item.label} />
               ))}
             </nav>
           </aside>
@@ -64,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </main>
         </div>
+        </Providers>
       </body>
     </html>
   );

@@ -33,11 +33,13 @@ export default function SyncButton({ onSync }: { onSync?: () => void }) {
       });
       const data: ImportResult = await res.json();
       setResult(data);
-      if (data.success) onSync?.();
-      setTimeout(() => setResult(null), 6000);
+      if (data.success) {
+        onSync?.();
+        setTimeout(() => setResult(null), 5000);
+      }
+      // Fouten blijven staan tot gebruiker wegklikt
     } catch (e: any) {
       setResult({ success: false, error: e.message });
-      setTimeout(() => setResult(null), 6000);
     }
 
     setImporting(false);
@@ -65,9 +67,12 @@ export default function SyncButton({ onSync }: { onSync?: () => void }) {
         <div className={`absolute right-0 top-12 px-4 py-3 rounded-lg text-sm shadow-lg z-10 whitespace-nowrap ${
           result.success ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
         }`}>
-          {result.success
-            ? `${result.nieuw} nieuw, ${result.overgeslagen} al aanwezig (${result.totaal} totaal)`
-            : `Fout: ${result.error}`}
+          <span>{result.success
+            ? `${result.nieuw} nieuw, ${result.overgeslagen} al aanwezig`
+            : `Fout: ${result.error}`}</span>
+          {!result.success && (
+            <button onClick={() => setResult(null)} className="ml-2 opacity-70 hover:opacity-100 text-xs">✕</button>
+          )}
         </div>
       )}
     </div>

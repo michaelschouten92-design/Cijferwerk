@@ -3,6 +3,7 @@
 import { formatEuro } from '@/lib/format';
 import { useEffect, useState } from 'react';
 import SyncButton from '@/components/SyncButton';
+import { useToast } from '@/components/Toast';
 import { Download, X, Trash2, Search, Check, Paperclip } from 'lucide-react';
 import Link from 'next/link';
 
@@ -48,6 +49,7 @@ export default function TransactiesPage() {
   const [relaties, setRelaties] = useState<Relatie[]>([]);
 
   const jaar = new Date().getFullYear();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadTransacties();
@@ -86,12 +88,14 @@ export default function TransactiesPage() {
       body: JSON.stringify({ id: txId, categorieId, btwPercentage: btwTarief, btwBedrag }),
     });
 
-    // V6: Vraag of regel aangemaakt moet worden
+    // Auto-regel aanmaken zonder confirm dialoog
     const cat = categorieen.find(c => c.id === categorieId);
-    const tegenpartij = tx.omschrijving.split(' — ')[0]; // eerste deel is de tegenpartij
+    const tegenpartij = tx.omschrijving.split(' — ')[0];
     if (cat && tegenpartij.length > 2 && tegenpartij.length < 50) {
-      const opslaan = confirm(`Wil je dat toekomstige transacties van "${tegenpartij}" automatisch als "${cat.naam}" worden verwerkt?`);
-      if (opslaan) {
+      // Check of er al een regel bestaat voor deze tegenpartij
+      const bestaandeRegels = await fetch('/api/categories').then(r => r.json());
+      const bestaand = bestaandeRegels.regels?.find((r: any) => tegenpartij.toLowerCase().includes(r.zoekterm));
+      if (!bestaand) {
         await fetch('/api/categories/regels', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -103,9 +107,11 @@ export default function TransactiesPage() {
             prioriteit: 10,
           }),
         });
+        toast(`Regel aangemaakt: "${tegenpartij}" → ${cat.naam}`);
       }
     }
 
+    toast('Transactie verwerkt');
     loadTransacties();
   }
 
