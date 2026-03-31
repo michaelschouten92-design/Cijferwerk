@@ -32,6 +32,7 @@ model Relatie {
   createdAt    DateTime      @default(now())
   transacties  Transactie[]
   facturen     Factuur[]
+  sjablonen    FactuurSjabloon[]
 }
 
 model Categorie {
@@ -105,6 +106,18 @@ model FactuurRegel {
   beschrijving    String
   stuksprijs      Float
   btwPercentage   Float     @default(0.21)
+}
+
+model FactuurSjabloon {
+  id              Int       @id @default(autoincrement())
+  naam            String    // bijv. "Maandelijkse hosting Han Lacourt"
+  relatieId       Int
+  relatie         Relatie   @relation(fields: [relatieId], references: [id])
+  interval        String    @default("maandelijks") // maandelijks | kwartaal | jaarlijks
+  volgendeDatum   DateTime  // wanneer de volgende factuur moet worden aangemaakt
+  regels          String    // JSON array van { aantal, beschrijving, stuksprijs, btwPercentage }
+  actief          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
 }
 
 model SyncLog {

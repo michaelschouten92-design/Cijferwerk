@@ -1,5 +1,6 @@
 'use client';
 
+import { formatEuro } from '@/lib/format';
 import { useEffect, useState, useCallback } from 'react';
 import SyncButton from '@/components/SyncButton';
 import { Download, AlertCircle, Clock, ArrowRight } from 'lucide-react';
@@ -21,14 +22,12 @@ interface DashboardData {
   btwAangifte: { kwartaal: number; teBetalen: number };
   btwDeadline: { kwartaal: number; deadline: string; dagenTot: number } | null;
   openstaandeFacturen: { id: number; nummer: string; klant: string; totaal: number; dagenOver: number }[];
+  klaarstaandeSjablonen: { id: number; naam: string; klant: string; interval: string }[];
   laatsteSync: { timestamp: string; melding: string } | null;
 }
 
 const maandNamen = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
 
-function formatEuro(n: number) {
-  return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n);
-}
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -61,6 +60,13 @@ export default function Dashboard() {
         type: 'danger',
       });
     }
+  }
+  for (const s of data.klaarstaandeSjablonen) {
+    alerts.push({
+      text: `Factuur "${s.naam}" voor ${s.klant} staat klaar om aan te maken`,
+      href: '/invoices',
+      type: 'info',
+    });
   }
   if (data.btwDeadline && data.btwDeadline.dagenTot <= 30 && data.btwDeadline.dagenTot > 0) {
     alerts.push({

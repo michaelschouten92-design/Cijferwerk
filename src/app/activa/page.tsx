@@ -1,5 +1,6 @@
 'use client';
 
+import { formatEuro } from '@/lib/format';
 import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, X, Check } from 'lucide-react';
 
@@ -16,9 +17,6 @@ interface Actief {
   boekwaarde: number;
 }
 
-function formatEuro(n: number) {
-  return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n);
-}
 
 export default function ActivaPage() {
   const [activa, setActiva] = useState<Actief[]>([]);

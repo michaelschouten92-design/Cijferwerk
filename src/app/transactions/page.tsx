@@ -1,5 +1,6 @@
 'use client';
 
+import { formatEuro } from '@/lib/format';
 import { useEffect, useState } from 'react';
 import SyncButton from '@/components/SyncButton';
 import { Download, X, Trash2, Search, Check } from 'lucide-react';
@@ -33,9 +34,6 @@ interface Relatie {
   type: string;
 }
 
-function formatEuro(n: number) {
-  return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n);
-}
 
 export default function TransactiesPage() {
   const [transacties, setTransacties] = useState<Transactie[]>([]);

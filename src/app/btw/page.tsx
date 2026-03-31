@@ -1,5 +1,6 @@
 'use client';
 
+import { formatEuro } from '@/lib/format';
 import { useEffect, useState } from 'react';
 import { Download, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -32,9 +33,6 @@ interface BtwAangifte {
   teBetalen: number;
 }
 
-function formatEuro(n: number) {
-  return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n);
-}
 
 const BTW_DEADLINES: Record<number, string> = { 1: '30 april', 2: '31 juli', 3: '31 oktober', 4: '31 januari' };
 

@@ -40,21 +40,14 @@ export async function GET(req: NextRequest) {
     return round2(maandTx.reduce((s, t) => s + t.bedragExclBtw, 0));
   });
 
-  // Huidige kwartaal BTW
+  // Parallelle queries voor onafhankelijke data
   const huidigKwartaal = Math.floor(new Date().getMonth() / 3) + 1;
-  const btwAangifte = await genereerBtwAangifte(jaar, huidigKwartaal);
-
-  // Laatste sync
-  const laatsteSync = await prisma.syncLog.findFirst({ orderBy: { timestamp: 'desc' } });
-
-  // Rekeningbalans
-  const settings = await prisma.appSettings.findFirst({ where: { id: 1 } });
-
-  // Openstaande facturen
-  const openstaandeFacturen = await prisma.factuur.findMany({
-    where: { status: 'openstaand' },
-    include: { relatie: true, regels: true },
-  });
+  const [btwAangifte, laatsteSync, settings, openstaandeFacturen] = await Promise.all([
+    genereerBtwAangifte(jaar, huidigKwartaal),
+    prisma.syncLog.findFirst({ orderBy: { timestamp: 'desc' } }),
+    prisma.appSettings.findFirst({ where: { id: 1 } }),
+    prisma.factuur.findMany({ where: { status: 'openstaand' }, include: { relatie: true, regels: true } }),
+  ]);
   const openstaand = openstaandeFacturen.map(f => {
     const totaal = f.regels.reduce((s, r) => s + r.aantal * r.stuksprijs * (1 + r.btwPercentage), 0);
     const dagenOver = Math.floor((Date.now() - new Date(f.vervaldatum).getTime()) / 86400000);
@@ -98,6 +91,7 @@ export async function GET(req: NextRequest) {
     inkomstenDezeMaand,
     uitgavenDezeMaand,
     openstaandeFacturen: openstaand,
+    klaarstaandeSjablonen: await getKlaarstaandeSjablonen(),
     btwDeadline: btwDeadline ? {
       kwartaal: huidigKwartaal,
       deadline: btwDeadline.deadline,
@@ -109,6 +103,20 @@ export async function GET(req: NextRequest) {
       melding: laatsteSync.melding,
     } : null,
   });
+}
+
+async function getKlaarstaandeSjablonen() {
+  const sjablonen = await prisma.factuurSjabloon.findMany({
+    where: { actief: true, volgendeDatum: { lte: new Date() } },
+    include: { relatie: true },
+  });
+  return sjablonen.map(s => ({
+    id: s.id,
+    naam: s.naam,
+    klant: s.relatie.naam,
+    interval: s.interval,
+    volgendeDatum: s.volgendeDatum,
+  }));
 }
 
 function round2(n: number): number {

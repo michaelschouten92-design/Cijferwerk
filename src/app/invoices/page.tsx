@@ -1,7 +1,8 @@
 'use client';
 
+import { formatEuro } from '@/lib/format';
 import { useEffect, useState } from 'react';
-import { FileText, Send, X, CheckCircle, Trash2, RotateCcw } from 'lucide-react';
+import { FileText, Send, X, CheckCircle, Trash2, RotateCcw, RefreshCw } from 'lucide-react';
 
 interface Factuur {
   id: number;
@@ -19,9 +20,6 @@ interface Relatie {
   type: string;
 }
 
-function formatEuro(n: number) {
-  return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n);
-}
 
 function totaal(f: Factuur) {
   return f.regels.reduce((s, r) => s + r.aantal * r.stuksprijs * (1 + r.btwPercentage), 0);
@@ -31,18 +29,45 @@ function dagenOver(f: Factuur): number {
   return Math.max(0, Math.floor((Date.now() - new Date(f.vervaldatum).getTime()) / 86400000));
 }
 
+interface Sjabloon {
+  id: number;
+  naam: string;
+  interval: string;
+  volgendeDatum: string;
+  actief: boolean;
+  relatie: { id: number; naam: string };
+  regels: string;
+}
+
 export default function FacturenPage() {
   const [facturen, setFacturen] = useState<Factuur[]>([]);
+  const [sjablonen, setSjablonen] = useState<Sjabloon[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [showSjabloonForm, setShowSjabloonForm] = useState(false);
   const [sendModal, setSendModal] = useState<Factuur | null>(null);
   const [markeerModal, setMarkeerModal] = useState<Factuur | null>(null);
   const [deleteModal, setDeleteModal] = useState<Factuur | null>(null);
 
   function load() {
     fetch('/api/invoices').then(r => r.json()).then(setFacturen);
+    fetch('/api/sjablonen').then(r => r.json()).then(setSjablonen);
   }
 
   useEffect(() => { load(); }, []);
+
+  async function genereerVanSjabloon(sjabloonId: number) {
+    await fetch('/api/sjablonen/genereer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sjabloonId }),
+    });
+    load();
+  }
+
+  async function verwijderSjabloon(id: number) {
+    await fetch(`/api/sjablonen?id=${id}`, { method: 'DELETE' });
+    load();
+  }
 
   async function handleCreditnota(f: Factuur) {
     if (!confirm(`Creditnota aanmaken voor factuur ${f.nummer}?\n\nDit maakt een nieuwe factuur aan met negatieve bedragen.`)) return;
@@ -81,6 +106,7 @@ export default function FacturenPage() {
   const openstaand = facturen.filter(f => f.status === 'openstaand');
   const betaald = facturen.filter(f => f.status === 'betaald');
   const totaalOpenstaand = openstaand.reduce((s, f) => s + totaal(f), 0);
+  const actieveSjablonen = sjablonen.filter(s => s.actief);
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -93,13 +119,55 @@ export default function FacturenPage() {
             </p>
           )}
         </div>
-        <button onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
-          + Nieuwe factuur
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => setShowSjabloonForm(!showSjabloonForm)}
+            className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50">
+            + Terugkerend
+          </button>
+          <button onClick={() => setShowForm(!showForm)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+            + Nieuwe factuur
+          </button>
+        </div>
       </div>
 
       {showForm && <NewInvoiceForm onSave={() => { setShowForm(false); load(); }} />}
+
+      {/* Terugkerende facturen */}
+      {(actieveSjablonen.length > 0 || showSjabloonForm) && (
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-gray-500 uppercase mb-3">Terugkerend</h3>
+
+          {showSjabloonForm && <SjabloonForm onSave={() => { setShowSjabloonForm(false); load(); }} onCancel={() => setShowSjabloonForm(false)} />}
+
+          {actieveSjablonen.map(s => {
+            const isKlaar = new Date(s.volgendeDatum) <= new Date();
+            return (
+              <div key={s.id} className={`bg-white rounded-xl border p-4 mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isKlaar ? 'border-blue-300' : 'border-gray-200'}`}>
+                <div>
+                  <span className="font-medium text-gray-900">{s.naam}</span>
+                  <span className="text-gray-400 mx-2">·</span>
+                  <span className="text-gray-500 text-sm">{s.relatie.naam}</span>
+                  <span className="text-gray-400 mx-2">·</span>
+                  <span className="text-xs text-gray-400">{s.interval}</span>
+                  {isKlaar && <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">Klaar om aan te maken</span>}
+                  {!isKlaar && <span className="ml-2 text-xs text-gray-400">Volgende: {new Date(s.volgendeDatum).toLocaleDateString('nl-NL')}</span>}
+                </div>
+                <div className="flex items-center gap-2">
+                  {isKlaar && (
+                    <button onClick={() => genereerVanSjabloon(s.id)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+                      <RefreshCw className="w-3.5 h-3.5" /> Factuur aanmaken
+                    </button>
+                  )}
+                  <button onClick={() => verwijderSjabloon(s.id)}
+                    className="p-1.5 text-gray-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Openstaand */}
       {openstaand.length > 0 && (
@@ -451,6 +519,99 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
           className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">
           Factuur aanmaken
         </button>
+      </div>
+    </form>
+  );
+}
+
+function SjabloonForm({ onSave, onCancel }: { onSave: () => void; onCancel: () => void }) {
+  const [relaties, setRelaties] = useState<Relatie[]>([]);
+  const [form, setForm] = useState({
+    naam: '',
+    relatieId: '',
+    interval: 'maandelijks',
+    volgendeDatum: new Date().toISOString().split('T')[0],
+    regels: [{ aantal: 1, beschrijving: '', stuksprijs: 0, btwPercentage: 0.21 }],
+  });
+
+  useEffect(() => {
+    fetch('/api/relaties').then(r => r.json()).then(setRelaties);
+  }, []);
+
+  function updateRegel(i: number, field: string, value: any) {
+    const regels = [...form.regels];
+    (regels[i] as any)[field] = value;
+    setForm({ ...form, regels });
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await fetch('/api/sjablonen', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form, relatieId: parseInt(form.relatieId) }),
+    });
+    onSave();
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-5 mb-3">
+      <h4 className="font-semibold text-gray-900 mb-3">Nieuw sjabloon</h4>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Naam</label>
+          <input value={form.naam} onChange={e => setForm({ ...form, naam: e.target.value })}
+            className="w-full px-3 py-1.5 border rounded text-sm" placeholder="bijv. Hosting" required />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Klant</label>
+          <select value={form.relatieId} onChange={e => setForm({ ...form, relatieId: e.target.value })}
+            className="w-full px-3 py-1.5 border rounded text-sm" required>
+            <option value="">Selecteer</option>
+            {relaties.filter(r => r.type === 'klant' || r.type === 'beide').map(r => (
+              <option key={r.id} value={r.id}>{r.naam}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Interval</label>
+          <select value={form.interval} onChange={e => setForm({ ...form, interval: e.target.value })}
+            className="w-full px-3 py-1.5 border rounded text-sm">
+            <option value="maandelijks">Maandelijks</option>
+            <option value="kwartaal">Per kwartaal</option>
+            <option value="jaarlijks">Jaarlijks</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Eerste factuur</label>
+          <input type="date" value={form.volgendeDatum} onChange={e => setForm({ ...form, volgendeDatum: e.target.value })}
+            className="w-full px-3 py-1.5 border rounded text-sm" required />
+        </div>
+      </div>
+
+      <label className="block text-xs text-gray-500 mb-1">Factuurregels</label>
+      {form.regels.map((r, i) => (
+        <div key={i} className="grid grid-cols-12 gap-2 mb-2">
+          <input type="number" value={r.aantal} onChange={e => updateRegel(i, 'aantal', parseInt(e.target.value) || 1)}
+            className="col-span-1 px-2 py-1.5 border rounded text-sm text-center" />
+          <input value={r.beschrijving} onChange={e => updateRegel(i, 'beschrijving', e.target.value)}
+            className="col-span-5 px-2 py-1.5 border rounded text-sm" placeholder="Omschrijving" />
+          <input type="number" step="0.01" value={r.stuksprijs || ''} onChange={e => updateRegel(i, 'stuksprijs', parseFloat(e.target.value) || 0)}
+            className="col-span-3 px-2 py-1.5 border rounded text-sm" placeholder="Prijs" />
+          <select value={r.btwPercentage} onChange={e => updateRegel(i, 'btwPercentage', parseFloat(e.target.value))}
+            className="col-span-3 px-2 py-1.5 border rounded text-sm">
+            <option value={0.21}>21%</option>
+            <option value={0.09}>9%</option>
+            <option value={0}>0%</option>
+          </select>
+        </div>
+      ))}
+      <button type="button" onClick={() => setForm({ ...form, regels: [...form.regels, { aantal: 1, beschrijving: '', stuksprijs: 0, btwPercentage: 0.21 }] })}
+        className="text-blue-600 text-sm hover:text-blue-800 mb-3">+ Regel</button>
+
+      <div className="flex justify-end gap-2">
+        <button type="button" onClick={onCancel} className="px-4 py-1.5 text-sm text-gray-600">Annuleer</button>
+        <button type="submit" className="px-5 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Opslaan</button>
       </div>
     </form>
   );
