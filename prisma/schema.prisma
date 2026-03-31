@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model VastActief {
+  id              Int       @id @default(autoincrement())
+  naam            String    // bijv. "MacBook Pro 2025"
+  aanschafDatum   DateTime
+  aanschafWaarde  Float     // excl. BTW
+  restwaarde      Float     @default(0)
+  levensduurJaren Int       @default(5)
+  notitie         String?
+  createdAt       DateTime  @default(now())
+}
+
+model Relatie {
+  id           Int           @id @default(autoincrement())
+  naam         String
+  adres        String?
+  postcode     String?
+  plaats        String?
+  land         String?       @default("NL")
+  telefoon     String?
+  email        String?
+  btwNummer    String?       // bijv. NL123456789B01
+  type         String        @default("leverancier") // klant | leverancier | beide
+  createdAt    DateTime      @default(now())
+  transacties  Transactie[]
+  facturen     Factuur[]
+}
+
+model Categorie {
+  id           Int           @id @default(autoincrement())
+  code         String        @unique // 4500, 4550, 8000, etc.
+  naam         String        // Contributies en abonnementen, Bankkosten, etc.
+  type         String        // kosten | omzet | balans
+  btwTarief    Float         @default(0.21) // 0.21, 0.09, 0
+  btwVrijgesteld Boolean     @default(false)
+  transacties  Transactie[]
+}
+
+model CategorieRegel {
+  id              Int      @id @default(autoincrement())
+  zoekterm        String   // tekst om te matchen in omschrijving/tegenpartij
+  zoekVeld        String   @default("tegenpartij") // tegenpartij | omschrijving
+  categorieCode   String   // verwijst naar Categorie.code
+  relatieNaam     String?  // automatisch relatie toewijzen
+  btwTarief       Float?   // override btw tarief (null = gebruik categorie default)
+  prioriteit      Int      @default(0) // hogere prioriteit wint bij meerdere matches
+}
+
+model Transactie {
+  id              Int       @id @default(autoincrement())
+  datum           DateTime
+  soort           String    @default("Overig") // Factuur | Bonnetje | Overig
+  factuurnummer   String?
+  omschrijving    String
+  bedragExclBtw   Float
+  btwPercentage   Float     @default(0.21)
+  btwBedrag       Float     @default(0)
+  status          String    @default("Betaald via Bank")
+  richting        String    // inkoop | verkoop
+  gecategoriseerd Boolean   @default(false)
+  revolutTransId  String?   @unique // Revolut transaction ID voor deduplicatie
+  relatieId       Int?
+  relatie         Relatie?  @relation(fields: [relatieId], references: [id])
+  categorieId     Int?
+  categorie       Categorie? @relation(fields: [categorieId], references: [id])
+  factuurId       Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model WijzigingLog {
+  id          Int      @id @default(autoincrement())
+  transactieId Int
+  veld        String   // welk veld is gewijzigd
+  oudeWaarde  String?
+  nieuweWaarde String?
+  timestamp   DateTime @default(now())
+}
+
+model Factuur {
+  id              Int       @id @default(autoincrement())
+  nummer          String    @unique // 2026-01, 2026-02, etc.
+  datum           DateTime
+  vervaldatum     DateTime
+  relatieId       Int
+  relatie         Relatie   @relation(fields: [relatieId], references: [id])
+  status          String    @default("openstaand") // openstaand | betaald
+  createdAt       DateTime  @default(now())
+  regels          FactuurRegel[]
+}
+
+model FactuurRegel {
+  id              Int       @id @default(autoincrement())
+  factuurId       Int
+  factuur         Factuur   @relation(fields: [factuurId], references: [id], onDelete: Cascade)
+  aantal          Int       @default(1)
+  beschrijving    String
+  stuksprijs      Float
+  btwPercentage   Float     @default(0.21)
+}
+
+model SyncLog {
+  id              Int       @id @default(autoincrement())
+  timestamp       DateTime  @default(now())
+  aantalNieuw     Int
+  aantalOvergeslagen Int
+  status          String    // success | error
+  melding         String?
+}
+
+model AppSettings {
+  id                  Int      @id @default(1)
+  revolutApiUrl       String   @default("https://sandbox-b2b.revolut.com/api/1.0")
+  revolutClientId     String?
+  revolutPrivateKey   String?  // PEM content
+  revolutJwtIssuer    String?
+  syncIntervalMinuten Int      @default(60) // 0 = uitgeschakeld
+  rekeningBalans      Float    @default(0)
+  balansUpdatedAt     DateTime?
+  beginVermogen       Float    @default(0) // Eigen vermogen begin boekjaar
+  smtpHost            String?
+  smtpPort            Int?     @default(587)
+  smtpUser            String?
+  smtpPass            String?
+  smtpFrom            String?  // Afzendernaam <email>
+  // Bedrijfsgegevens
+  bedrijfNaam         String?
+  bedrijfContact      String?
+  bedrijfAdres        String?
+  bedrijfPostcode     String?
+  bedrijfTelefoon     String?
+  bedrijfEmail        String?
+  bedrijfKvk          String?
+  bedrijfBtw          String?
+  bedrijfIban         String?
+  // Factuur personalisatie
+  factuurLogo         String?  // Base64 encoded logo
+  factuurKleur        String   @default("#2563eb") // Hex kleurcode
+  updatedAt           DateTime @updatedAt
+}
