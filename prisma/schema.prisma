@@ -135,11 +135,6 @@ model SyncLog {
 
 model AppSettings {
   id                  Int      @id @default(1)
-  revolutApiUrl       String   @default("https://sandbox-b2b.revolut.com/api/1.0")
-  revolutClientId     String?
-  revolutPrivateKey   String?  // PEM content
-  revolutJwtIssuer    String?
-  syncIntervalMinuten Int      @default(60) // 0 = uitgeschakeld
   rekeningBalans      Float    @default(0)
   balansUpdatedAt     DateTime?
   beginVermogen       Float    @default(0) // Eigen vermogen begin boekjaar

@@ -48,7 +48,7 @@ export default function TransactiesPage() {
   const [categorieen, setCategorieen] = useState<Categorie[]>([]);
   const [relaties, setRelaties] = useState<Relatie[]>([]);
 
-  const jaar = new Date().getFullYear();
+  const [jaar, setJaar] = useState(new Date().getFullYear());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function TransactiesPage() {
     fetch('/api/relaties').then(r => r.json()).then(setRelaties);
   }, []);
 
-  useEffect(() => { loadTransacties(); }, [filter]);
+  useEffect(() => { loadTransacties(); }, [filter, jaar]);
 
   function loadTransacties() {
     const params = filter !== 'alle' ? `?richting=${filter}&jaar=${jaar}` : `?jaar=${jaar}`;
@@ -123,7 +123,15 @@ export default function TransactiesPage() {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Transacties</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl font-bold text-gray-900">Transacties</h2>
+          <select value={jaar} onChange={e => setJaar(parseInt(e.target.value))}
+            className="px-2 py-1 border border-gray-200 rounded-lg text-sm text-gray-600">
+            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
         <div className="flex flex-wrap gap-2 items-center">
           <a href={`/api/export/transactions?jaar=${jaar}${filter !== 'alle' ? `&richting=${filter}` : ''}`}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">

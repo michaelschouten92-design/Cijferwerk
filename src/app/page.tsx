@@ -31,10 +31,11 @@ const maandNamen = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [jaar, setJaar] = useState(new Date().getFullYear());
 
   const load = useCallback(() => {
-    fetch(`/api/dashboard?jaar=${new Date().getFullYear()}`).then(r => r.json()).then(setData);
-  }, []);
+    fetch(`/api/dashboard?jaar=${jaar}`).then(r => r.json()).then(setData);
+  }, [jaar]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -80,7 +81,15 @@ export default function Dashboard() {
     <div className="max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Overzicht</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl font-bold text-gray-900">Overzicht</h2>
+          <select value={jaar} onChange={e => setJaar(parseInt(e.target.value))}
+            className="px-2 py-1 border border-gray-200 rounded-lg text-sm text-gray-600">
+            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <a href={`/api/export/jaarafsluiting?jaar=${data.jaar}`}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-white bg-blue-600 rounded-lg hover:bg-blue-700">

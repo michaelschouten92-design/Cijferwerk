@@ -1,7 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Download, Upload, Save } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const CategorieenContent = dynamic(() => import('@/app/categorieen/page'), { ssr: false });
+const ActivaContent = dynamic(() => import('@/app/activa/page'), { ssr: false });
 
 interface SyncLog {
   id: number;
@@ -12,8 +17,15 @@ interface SyncLog {
   melding: string | null;
 }
 
+const tabs = [
+  { id: 'algemeen', label: 'Algemeen' },
+  { id: 'categorieen', label: 'Categorieën' },
+  { id: 'bezittingen', label: 'Bezittingen' },
+];
+
 export default function SettingsPage() {
   const [syncLogs, setSyncLogs] = useState<SyncLog[]>([]);
+  const [activeTab, setActiveTab] = useState('algemeen');
 
   useEffect(() => {
     fetch('/api/revolut').then(r => r.json()).then(setSyncLogs);
@@ -21,7 +33,22 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Instellingen</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">Instellingen</h2>
+
+      {/* Tabs */}
+      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mb-6">
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === t.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'categorieen' && <CategorieenContent />}
+      {activeTab === 'bezittingen' && <ActivaContent />}
+      {activeTab !== 'algemeen' && activeTab !== 'categorieen' && activeTab !== 'bezittingen' ? null : null}
+      {activeTab !== 'algemeen' ? null : (<div>
 
       {/* Revolut CSV Import instructies */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
@@ -70,6 +97,7 @@ export default function SettingsPage() {
 
       {/* SMTP E-mail */}
       <SmtpSection />
+      </div>)}
     </div>
   );
 }

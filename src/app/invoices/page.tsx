@@ -2,7 +2,7 @@
 
 import { formatEuro } from '@/lib/format';
 import { useEffect, useState } from 'react';
-import { FileText, Send, X, CheckCircle, Trash2, RotateCcw, RefreshCw, Link2 } from 'lucide-react';
+import { FileText, Send, X, CheckCircle, Trash2, RotateCcw, RefreshCw, Link2, Search } from 'lucide-react';
 
 interface Factuur {
   id: number;
@@ -49,6 +49,7 @@ export default function FacturenPage() {
   const [markeerModal, setMarkeerModal] = useState<Factuur | null>(null);
   const [deleteModal, setDeleteModal] = useState<Factuur | null>(null);
   const [koppelModal, setKoppelModal] = useState<Factuur | null>(null);
+  const [zoek, setZoek] = useState('');
 
   function load() {
     fetch('/api/invoices').then(r => r.json()).then(setFacturen);
@@ -105,8 +106,13 @@ export default function FacturenPage() {
     load();
   }
 
-  const openstaand = facturen.filter(f => f.status === 'openstaand');
-  const betaald = facturen.filter(f => f.status === 'betaald');
+  const zoekFilter = (f: Factuur) => {
+    if (!zoek) return true;
+    const z = zoek.toLowerCase();
+    return f.nummer.toLowerCase().includes(z) || f.relatie.naam.toLowerCase().includes(z);
+  };
+  const openstaand = facturen.filter(f => f.status === 'openstaand' && zoekFilter(f));
+  const betaald = facturen.filter(f => f.status === 'betaald' && zoekFilter(f));
   const totaalOpenstaand = openstaand.reduce((s, f) => s + totaal(f), 0);
   const actieveSjablonen = sjablonen.filter(s => s.actief);
 
@@ -121,7 +127,12 @@ export default function FacturenPage() {
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-2 text-gray-400" />
+            <input type="text" value={zoek} onChange={e => setZoek(e.target.value)}
+              placeholder="Zoek factuur..." className="pl-9 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm w-44" />
+          </div>
           <button onClick={() => setShowSjabloonForm(!showSjabloonForm)}
             className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50">
             + Terugkerend
