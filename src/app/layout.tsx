@@ -14,6 +14,7 @@ const navItems = [
   { href: '/invoices', label: 'Facturen' },
   { href: '/btw', label: 'BTW' },
   { href: '/activa', label: 'Bezittingen' },
+  { href: '/relaties', label: 'Klanten' },
   { href: '/categorieen', label: 'Categorieën' },
   { href: '/settings', label: 'Instellingen' },
 ];
