@@ -40,12 +40,16 @@ export async function GET() {
  */
 export async function POST(req: NextRequest) {
   const body = await req.json();
+  const restwaarde = Math.max(0, body.restwaarde ?? 0);
+  if (restwaarde >= body.aanschafWaarde) {
+    return NextResponse.json({ error: 'Restwaarde moet lager zijn dan aanschafwaarde' }, { status: 400 });
+  }
   const actief = await prisma.vastActief.create({
     data: {
       naam: body.naam,
       aanschafDatum: new Date(body.aanschafDatum),
-      aanschafWaarde: body.aanschafWaarde,
-      restwaarde: body.restwaarde ?? 0,
+      aanschafWaarde: Math.abs(body.aanschafWaarde),
+      restwaarde,
       levensduurJaren: body.levensduurJaren ?? 5,
       notitie: body.notitie || null,
     },

@@ -478,8 +478,8 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <div>
           <label className="block text-sm text-gray-600 mb-1">Factuur #</label>
-          <input type="text" value={form.nummer} onChange={e => setForm({ ...form, nummer: e.target.value })}
-            className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50" required />
+          <input type="text" value={form.nummer} readOnly
+            className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-100 text-gray-500 cursor-not-allowed" />
         </div>
         <div>
           <label className="block text-sm text-gray-600 mb-1">Datum</label>

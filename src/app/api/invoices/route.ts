@@ -47,6 +47,20 @@ export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = parseInt(searchParams.get('id') || '0');
   if (!id) return NextResponse.json({ error: 'ID is verplicht' }, { status: 400 });
+
+  // Audit trail: log factuurdata vóór verwijdering
+  const factuur = await prisma.factuur.findUnique({ where: { id }, include: { regels: true } });
+  if (factuur) {
+    await prisma.wijzigingLog.create({
+      data: {
+        transactieId: 0, // geen transactie, maar factuur
+        veld: 'FACTUUR_VERWIJDERD',
+        oudeWaarde: JSON.stringify(factuur),
+        nieuweWaarde: null,
+      },
+    });
+  }
+
   await prisma.factuur.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }

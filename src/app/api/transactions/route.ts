@@ -45,9 +45,9 @@ export async function POST(req: NextRequest) {
       soort: body.soort || 'Overig',
       factuurnummer: body.factuurnummer,
       omschrijving: body.omschrijving,
-      bedragExclBtw: body.bedragExclBtw,
+      bedragExclBtw: Math.abs(body.bedragExclBtw),
       btwPercentage: body.btwPercentage ?? 0.21,
-      btwBedrag: body.btwBedrag ?? 0,
+      btwBedrag: Math.abs(body.btwBedrag ?? 0),
       status: body.status || 'Betaald via Bank',
       richting: body.richting,
       gecategoriseerd: true,
@@ -109,6 +109,19 @@ export async function DELETE(req: NextRequest) {
 
   if (!id) {
     return NextResponse.json({ error: 'ID is verplicht' }, { status: 400 });
+  }
+
+  // Audit trail: log volledige transactiedata vóór verwijdering
+  const tx = await prisma.transactie.findUnique({ where: { id } });
+  if (tx) {
+    await prisma.wijzigingLog.create({
+      data: {
+        transactieId: id,
+        veld: 'VERWIJDERD',
+        oudeWaarde: JSON.stringify(tx),
+        nieuweWaarde: null,
+      },
+    });
   }
 
   await prisma.transactie.delete({ where: { id } });
