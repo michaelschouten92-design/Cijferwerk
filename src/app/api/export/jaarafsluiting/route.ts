@@ -63,13 +63,22 @@ export async function GET(req: NextRequest) {
   archive.append(wvHtml, { name: `Winst-Verlies-${jaar}.html` });
 
   // 2. Balans
-  const nu = new Date();
+  const jaareinde = new Date(jaar, 11, 31);
   const totaalBoekwaarde = vasteActiva.reduce((s, a) => {
     const afschrijfbaar = a.aanschafWaarde - a.restwaarde;
     const jaarAfschr = afschrijfbaar / a.levensduurJaren;
-    const maanden = (nu.getFullYear() - a.aanschafDatum.getFullYear()) * 12 + (nu.getMonth() - a.aanschafDatum.getMonth());
+    const maanden = (jaareinde.getFullYear() - a.aanschafDatum.getFullYear()) * 12 + (jaareinde.getMonth() - a.aanschafDatum.getMonth());
     return s + a.aanschafWaarde - Math.min(Math.max(0, (jaarAfschr / 12) * maanden), afschrijfbaar);
   }, 0);
+
+  // Debiteuren: openstaande verkoopfacturen
+  const openstaand = await prisma.factuur.findMany({
+    where: { status: 'openstaand' },
+    include: { regels: true },
+  });
+  const debiteuren = round2(openstaand.reduce((sum, f) => {
+    return sum + f.regels.reduce((s, r) => s + r.aantal * r.stuksprijs * (1 + r.btwPercentage), 0);
+  }, 0));
 
   let btwPositie = 0;
   for (let q = 1; q <= 4; q++) {
@@ -81,7 +90,7 @@ export async function GET(req: NextRequest) {
     jaar,
     vasteActiva: round2(totaalBoekwaarde),
     liquidMiddelen: settings?.rekeningBalans ?? 0,
-    debiteuren: 0,
+    debiteuren,
     btwPositie: round2(btwPositie),
     beginVermogen: settings?.beginVermogen ?? 0,
     winst,

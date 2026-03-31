@@ -35,11 +35,11 @@ export async function GET(req: NextRequest) {
 
   // Vaste activa boekwaarde
   const vasteActiva = await prisma.vastActief.findMany();
-  const nu = new Date();
+  const jaareinde = new Date(jaar, 11, 31);
   const totaalBoekwaarde = vasteActiva.reduce((s, a) => {
     const afschrijfbaar = a.aanschafWaarde - a.restwaarde;
     const jaarAfschrijving = afschrijfbaar / a.levensduurJaren;
-    const maanden = (nu.getFullYear() - a.aanschafDatum.getFullYear()) * 12 + (nu.getMonth() - a.aanschafDatum.getMonth());
+    const maanden = (jaareinde.getFullYear() - a.aanschafDatum.getFullYear()) * 12 + (jaareinde.getMonth() - a.aanschafDatum.getMonth());
     const afgeschreven = Math.min(Math.max(0, (jaarAfschrijving / 12) * maanden), afschrijfbaar);
     return s + a.aanschafWaarde - afgeschreven;
   }, 0);

@@ -144,7 +144,7 @@ function parseCSVLine(line: string): string[] {
  * Parse Revolut datumformaat
  */
 function parseRevolutDate(dateStr: string): Date {
-  if (!dateStr) return new Date();
+  if (!dateStr) throw new Error('Transactie heeft geen datum — controleer het CSV-bestand');
 
   // "2026-03-15" of "2026-03-15 14:30:00"
   const isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
