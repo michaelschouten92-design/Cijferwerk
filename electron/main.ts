@@ -61,6 +61,7 @@ function startServer(): Promise<void> {
 
     const env = {
       ...process.env,
+      ELECTRON_RUN_AS_NODE: '1',
       DATABASE_URL: `file:${getDbPath()}`,
       DATA_DIR: getDataDir(),
       PORT: String(PORT),
