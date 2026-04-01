@@ -5,7 +5,7 @@ import { genereerFactuurHTML } from '@/lib/invoice-pdf';
 async function getBedrijfsgegevens() {
   const s = await prisma.appSettings.findFirst({ where: { id: 1 } });
   return {
-    naam: s?.bedrijfNaam || process.env.COMPANY_NAME || 'Algo Studio',
+    naam: s?.bedrijfNaam || process.env.COMPANY_NAME || 'Mijn Bedrijf',
     contactpersoon: s?.bedrijfContact || process.env.COMPANY_CONTACT || '',
     adres: s?.bedrijfAdres || process.env.COMPANY_ADDRESS || '',
     postcode: s?.bedrijfPostcode || process.env.COMPANY_POSTAL || '',

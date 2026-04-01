@@ -6,14 +6,15 @@ import NavLink from '@/components/NavLink';
 import Providers from '@/components/Providers';
 
 export const metadata: Metadata = {
-  title: 'Algo Studio — Financieel overzicht',
-  description: 'Financieel overzicht voor Algo Studio',
+  title: 'Cijferwerk',
+  description: 'Cijferwerk voor ZZP\'ers',
 };
 
 const navItems = [
   { href: '/', label: 'Overzicht' },
   { href: '/transactions', label: 'Transacties' },
   { href: '/invoices', label: 'Facturen' },
+  { href: '/kasboek', label: 'Kasboek' },
   { href: '/btw', label: 'BTW' },
   { href: '/relaties', label: 'Klanten' },
   { href: '/settings', label: 'Instellingen' },
@@ -27,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#2563eb" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Boekhouding" />
+        <meta name="apple-mobile-web-app-title" content="Cijferwerk" />
         <link rel="apple-touch-icon" href="/icon-192.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </head>
@@ -42,8 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Desktop sidebar */}
           <aside className="hidden lg:flex w-56 bg-white border-r border-gray-200 flex-col">
             <div className="p-5 border-b border-gray-100">
-              <h1 className="text-lg font-bold text-gray-900">Algo Studio</h1>
-              <p className="text-xs text-gray-400 mt-0.5">KVK 96041420</p>
+              <h1 className="text-lg font-bold text-gray-900">{process.env.COMPANY_NAME || 'Cijferwerk'}</h1>
             </div>
             <nav className="flex-1 p-3 space-y-0.5">
               {navItems.map(item => (

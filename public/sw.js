@@ -1,4 +1,4 @@
-const CACHE_NAME = 'algo-boekhouding-v1';
+const CACHE_NAME = 'algo-cijferwerk-v1';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

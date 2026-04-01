@@ -2,6 +2,7 @@
 
 import { formatEuro } from '@/lib/format';
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import SyncButton from '@/components/SyncButton';
 import { Download, AlertCircle, Clock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
@@ -32,14 +33,27 @@ const maandNamen = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [jaar, setJaar] = useState(new Date().getFullYear());
+  const [checked, setChecked] = useState(false);
+  const router = useRouter();
+
+  // Check of onboarding nodig is
+  useEffect(() => {
+    fetch('/api/settings').then(r => r.json()).then(s => {
+      if (!s.bedrijfNaam) {
+        router.replace('/onboarding');
+      } else {
+        setChecked(true);
+      }
+    }).catch(() => setChecked(true));
+  }, [router]);
 
   const load = useCallback(() => {
     fetch(`/api/dashboard?jaar=${jaar}`).then(r => r.json()).then(setData);
   }, [jaar]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { if (checked) load(); }, [load, checked]);
 
-  if (!data) return <div className="flex items-center justify-center h-64 text-gray-400">Laden...</div>;
+  if (!checked || !data) return <div className="flex items-center justify-center h-64 text-gray-400">Laden...</div>;
 
   const maxOmzet = Math.max(...data.omzetPerMaand, 1);
   const btwOpzij = Math.max(0, data.btwAangifte.teBetalen);

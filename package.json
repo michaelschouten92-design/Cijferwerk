@@ -1,7 +1,8 @@
 {
-  "name": "boekhouding-app",
+  "name": "cijferwerk",
   "version": "1.0.0",
   "private": true,
+  "main": "electron/dist/main.js",
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 4000",
     "build": "next build",
@@ -9,16 +10,16 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "setup": "prisma db push && tsx prisma/seed.ts"
+    "setup": "prisma db push && tsx prisma/seed.ts",
+    "build:electron": "tsc -p electron/tsconfig.json",
+    "build:template-db": "node scripts/create-template-db.js",
+    "build:prepare": "node scripts/prepare-standalone.js",
+    "build:desktop": "npm run build && npm run build:electron && npm run build:template-db && npm run build:prepare && electron-builder"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
-    "@types/archiver": "^7.0.0",
-    "@types/nodemailer": "^7.0.11",
+    "adm-zip": "^0.5.16",
     "archiver": "^7.0.1",
-    "date-fns": "^3.6.0",
-    "jspdf": "^2.5.1",
-    "jspdf-autotable": "^3.8.2",
     "lucide-react": "^0.383.0",
     "next": "^14.2.0",
     "nodemailer": "^8.0.4",
@@ -26,9 +27,15 @@
     "react-dom": "^18.3.0"
   },
   "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
+    "@types/archiver": "^7.0.0",
     "@types/node": "^20.14.0",
+    "@types/nodemailer": "^7.0.11",
     "@types/react": "^18.3.0",
     "autoprefixer": "^10.4.0",
+    "concurrently": "^9.2.1",
+    "electron": "^33.4.11",
+    "electron-builder": "^26.8.1",
     "postcss": "^8.4.0",
     "prisma": "^5.20.0",
     "tailwindcss": "^3.4.0",

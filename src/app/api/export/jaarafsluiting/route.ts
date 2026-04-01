@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
 
   // 6. Alle facturen als HTML
   const bedrijf = {
-    naam: settings?.bedrijfNaam || process.env.COMPANY_NAME || 'Algo Studio',
+    naam: settings?.bedrijfNaam || process.env.COMPANY_NAME || 'Mijn Bedrijf',
     contactpersoon: settings?.bedrijfContact || '',
     adres: settings?.bedrijfAdres || '',
     postcode: settings?.bedrijfPostcode || '',
@@ -194,8 +194,8 @@ h1{font-size:24px;border-bottom:2px solid #2563eb;padding-bottom:8px}h2{font-siz
 table{width:100%;border-collapse:collapse;margin:20px 0}th,td{padding:8px 12px;text-align:left;border-bottom:1px solid #e5e7eb}
 th{background:#f8fafc;font-size:12px;text-transform:uppercase;color:#6b7280}.right{text-align:right}
 .footer{margin-top:40px;font-size:12px;color:#9ca3af}</style></head><body>
-<h1>Vaste Activa Register</h1><h2>${jaar} | Algo Studio | KVK 96041420</h2>
+<h1>Vaste Activa Register</h1><h2>${jaar} | Mijn Bedrijf | KVK 96041420</h2>
 <table><thead><tr><th>Naam</th><th>Aanschaf</th><th class="right">Waarde</th><th class="right">Afschr./jaar</th><th class="right">Cum. afschr.</th><th class="right">Boekwaarde</th></tr></thead>
 <tbody>${rijen}</tbody></table>
-<div class="footer">Gegenereerd op ${new Date().toLocaleDateString('nl-NL')} — Algo Studio Boekhouding</div></body></html>`;
+<div class="footer">Gegenereerd op ${new Date().toLocaleDateString('nl-NL')} — Mijn Bedrijf</div></body></html>`;
 }

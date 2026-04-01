@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { parseRevolutCSV } from '@/lib/revolut';
+import { parseBankBestand } from '@/lib/bank-import';
 import { categoriseerEnSlaOp } from '@/lib/categorizer';
 
 /**
- * GET /api/revolut — Sync-geschiedenis ophalen
+ * GET /api/import — Sync-geschiedenis ophalen
  */
 export async function GET() {
   const logs = await prisma.syncLog.findMany({
@@ -15,7 +15,7 @@ export async function GET() {
 }
 
 /**
- * POST /api/revolut — Importeer transacties vanuit Revolut CSV
+ * POST /api/import — Importeer transacties vanuit Revolut CSV
  * Body: FormData met 'file' veld (CSV-bestand)
  */
 export async function POST(req: NextRequest) {
@@ -27,11 +27,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Geen bestand geüpload' }, { status: 400 });
     }
 
-    const csvContent = await file.text();
-    const { transacties: parsed, balans } = parseRevolutCSV(csvContent);
+    const content = await file.text();
+    const { transacties: parsed, balans } = parseBankBestand(content, file.name);
 
     if (parsed.length === 0) {
-      return NextResponse.json({ success: false, error: 'Geen transacties gevonden in het CSV-bestand' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Geen transacties gevonden in het bestand' }, { status: 400 });
     }
 
     // Categoriseer en sla op

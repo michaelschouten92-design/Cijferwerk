@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import * as fs from 'fs';
 import * as path from 'path';
-
-const UPLOADS_DIR = path.resolve(process.cwd(), 'uploads');
+import { UPLOADS_DIR } from '@/lib/paths';
 
 /**
  * GET /api/transactions/bijlage?id=123 — Download bijlage

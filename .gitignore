@@ -5,3 +5,6 @@ node_modules/
 .env
 certs/
 uploads/
+dist-electron/
+build-assets/
+electron/dist/

@@ -1,0 +1,28 @@
+appId: com.cijferwerk.app
+productName: Cijferwerk
+directories:
+  output: dist-electron
+win:
+  target: nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Cijferwerk
+extraResources:
+  - from: build-assets/standalone
+    to: standalone
+  - from: build-assets/template.db
+    to: template.db
+files:
+  - electron/dist/**/*
+  - "!node_modules"
+  - "!src"
+  - "!.next"
+  - "!prisma"
+  - "!uploads"
+  - "!.claude"
+  - "!build-assets"
+asarUnpack:
+  - "**/*.node"

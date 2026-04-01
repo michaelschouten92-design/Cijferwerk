@@ -1,7 +1,7 @@
 {
-  "name": "Algo Studio — Boekhouding",
-  "short_name": "Boekhouding",
-  "description": "Financieel overzicht voor Algo Studio",
+  "name": "Cijferwerk",
+  "short_name": "Cijferwerk",
+  "description": "Cijferwerk voor ZZP'ers",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",

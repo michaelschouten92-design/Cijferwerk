@@ -57,7 +57,7 @@ export function generateBtwAangifteHTML(aangifte: BtwAangifteData, kwartaal: num
 <html lang="nl">
 <head>
   <meta charset="utf-8">
-  <title>BTW Aangifte Q${kwartaal} ${jaar} - Algo Studio</title>
+  <title>BTW Aangifte Q${kwartaal} ${jaar} - Mijn Bedrijf</title>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 700px; margin: 40px auto; color: #1a1a1a; }
     h1 { font-size: 24px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; }
@@ -75,7 +75,7 @@ export function generateBtwAangifteHTML(aangifte: BtwAangifteData, kwartaal: num
 </head>
 <body>
   <h1>BTW Aangifte</h1>
-  <h2>Kwartaal ${kwartaal} — ${jaar} | Algo Studio | KVK 96041420</h2>
+  <h2>Kwartaal ${kwartaal} — ${jaar} | Mijn Bedrijf | KVK 96041420</h2>
 
   <table>
     <thead>
@@ -121,7 +121,7 @@ export function generateBtwAangifteHTML(aangifte: BtwAangifteData, kwartaal: num
   </table>
 
   <div class="footer">
-    Gegenereerd op ${new Date().toLocaleDateString('nl-NL')} — Algo Studio Boekhouding
+    Gegenereerd op ${new Date().toLocaleDateString('nl-NL')} — Mijn Bedrijf
   </div>
 </body>
 </html>`;
@@ -154,7 +154,7 @@ export function generateBalansHTML(data: BalansData): string {
 <html lang="nl">
 <head>
   <meta charset="utf-8">
-  <title>Balans per 31-12-${data.jaar} - Algo Studio</title>
+  <title>Balans per 31-12-${data.jaar} - Mijn Bedrijf</title>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 40px auto; color: #1a1a1a; }
     h1 { font-size: 24px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; }
@@ -174,7 +174,7 @@ export function generateBalansHTML(data: BalansData): string {
 </head>
 <body>
   <h1>Balans</h1>
-  <h2>Per 31 december ${data.jaar} | Algo Studio | KVK 96041420</h2>
+  <h2>Per 31 december ${data.jaar} | Mijn Bedrijf | KVK 96041420</h2>
 
   <div class="section">
     <div>
@@ -201,7 +201,7 @@ export function generateBalansHTML(data: BalansData): string {
   </div>
 
   <div class="footer">
-    Gegenereerd op ${new Date().toLocaleDateString('nl-NL')} — Algo Studio Boekhouding
+    Gegenereerd op ${new Date().toLocaleDateString('nl-NL')} — Mijn Bedrijf
   </div>
 </body>
 </html>`;
@@ -238,7 +238,7 @@ export function generateWinstVerliesHTML(data: WinstVerliesData): string {
 <html lang="nl">
 <head>
   <meta charset="utf-8">
-  <title>Winst & Verlies ${data.jaar} - Algo Studio</title>
+  <title>Winst & Verlies ${data.jaar} - Mijn Bedrijf</title>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 700px; margin: 40px auto; color: #1a1a1a; }
     h1 { font-size: 24px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; }
@@ -257,7 +257,7 @@ export function generateWinstVerliesHTML(data: WinstVerliesData): string {
 </head>
 <body>
   <h1>Winst & Verlies Overzicht</h1>
-  <h2>${data.jaar} | Algo Studio | KVK 96041420</h2>
+  <h2>${data.jaar} | Mijn Bedrijf | KVK 96041420</h2>
 
   <h3>Omzet</h3>
   <table>
@@ -286,7 +286,7 @@ export function generateWinstVerliesHTML(data: WinstVerliesData): string {
   </table>
 
   <div class="footer">
-    Gegenereerd op ${new Date().toLocaleDateString('nl-NL')} — Algo Studio Boekhouding
+    Gegenereerd op ${new Date().toLocaleDateString('nl-NL')} — Mijn Bedrijf
   </div>
 </body>
 </html>`;

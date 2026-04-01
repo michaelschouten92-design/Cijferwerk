@@ -28,7 +28,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('algemeen');
 
   useEffect(() => {
-    fetch('/api/revolut').then(r => r.json()).then(setSyncLogs);
+    fetch('/api/import').then(r => r.json()).then(setSyncLogs);
   }, []);
 
   return (
@@ -50,18 +50,17 @@ export default function SettingsPage() {
       {activeTab !== 'algemeen' && activeTab !== 'categorieen' && activeTab !== 'bezittingen' ? null : null}
       {activeTab !== 'algemeen' ? null : (<div>
 
-      {/* Revolut CSV Import instructies */}
+      {/* Bank Import instructies */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-        <h3 className="font-semibold text-gray-900 mb-4">Revolut Business Import</h3>
+        <h3 className="font-semibold text-gray-900 mb-4">Transacties importeren</h3>
         <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
-          <p className="font-medium mb-2">Transacties importeren:</p>
+          <p className="font-medium mb-2">Hoe werkt het:</p>
           <ol className="list-decimal list-inside space-y-1 text-blue-700">
-            <li>Ga naar <strong>Revolut Business</strong> en open je transactie-overzicht</li>
-            <li>Klik op <strong>Export</strong> en kies <strong>CSV</strong></li>
-            <li>Selecteer de gewenste periode</li>
-            <li>Klik op <strong>Importeer CSV</strong> op het Overzicht of de Transacties pagina</li>
+            <li>Ga naar je bank en open het transactie-overzicht</li>
+            <li>Exporteer als <strong>CSV</strong> of <strong>MT940</strong></li>
+            <li>Klik op <strong>Importeer</strong> op het Overzicht of de Transacties pagina</li>
           </ol>
-          <p className="mt-3 text-xs text-blue-600">Duplicaten worden automatisch herkend en overgeslagen.</p>
+          <p className="mt-3 text-xs text-blue-600">Ondersteunde banken: Revolut, ING, Rabobank, ABN AMRO, Bunq en andere banken met CSV of MT940 export. Duplicaten worden automatisch herkend.</p>
         </div>
       </div>
 
@@ -148,7 +147,7 @@ function BedrijfsSection() {
     <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
       <h3 className="font-semibold text-gray-900 mb-4">Bedrijfsgegevens & factuurstijl</h3>
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <div><label className="block text-xs text-gray-500 mb-1">Bedrijfsnaam</label><input value={form.bedrijfNaam} onChange={e => setForm({ ...form, bedrijfNaam: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" placeholder="Algo Studio" /></div>
+        <div><label className="block text-xs text-gray-500 mb-1">Bedrijfsnaam</label><input value={form.bedrijfNaam} onChange={e => setForm({ ...form, bedrijfNaam: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" placeholder="Jouw bedrijfsnaam" /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Contactpersoon</label><input value={form.bedrijfContact} onChange={e => setForm({ ...form, bedrijfContact: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Adres</label><input value={form.bedrijfAdres} onChange={e => setForm({ ...form, bedrijfAdres: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Postcode + plaats</label><input value={form.bedrijfPostcode} onChange={e => setForm({ ...form, bedrijfPostcode: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
@@ -207,10 +206,10 @@ function BackupSection() {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
       <h3 className="font-semibold text-gray-900 mb-4">Back-up</h3>
-      <p className="text-sm text-gray-500 mb-4">Download regelmatig een back-up van je boekhouding.</p>
+      <p className="text-sm text-gray-500 mb-4">Download regelmatig een back-up van je administratie.</p>
       <div className="flex items-center gap-3">
         <a href="/api/backup" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"><Download className="w-4 h-4" /> Download back-up</a>
-        <label className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 cursor-pointer ${restoring ? 'opacity-50' : ''}`}><Upload className="w-4 h-4" /> Herstel back-up<input type="file" accept=".db" onChange={handleRestore} className="hidden" disabled={restoring} /></label>
+        <label className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 cursor-pointer ${restoring ? 'opacity-50' : ''}`}><Upload className="w-4 h-4" /> Herstel back-up<input type="file" accept=".db,.zip" onChange={handleRestore} className="hidden" disabled={restoring} /></label>
       </div>
       {result && <div className={`mt-3 p-3 rounded-lg text-sm ${result.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{result.text}</div>}
     </div>

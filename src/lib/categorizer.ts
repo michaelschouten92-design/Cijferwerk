@@ -10,7 +10,7 @@
  */
 
 import { prisma } from './db';
-import type { ParsedTransaction } from './revolut';
+import type { ParsedTransaction } from './bank-import';
 
 interface CategorisatieResultaat {
   categorieCode: string;

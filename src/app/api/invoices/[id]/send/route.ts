@@ -21,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   });
   if (!factuur) return NextResponse.json({ error: 'Factuur niet gevonden' }, { status: 404 });
 
-  const bedrijfNaam = settings.bedrijfNaam || process.env.COMPANY_NAME || 'Algo Studio';
+  const bedrijfNaam = settings.bedrijfNaam || process.env.COMPANY_NAME || 'Mijn Bedrijf';
 
   const html = genereerFactuurHTML({
     nummer: factuur.nummer,

@@ -27,7 +27,7 @@ export default function SyncButton({ onSync }: { onSync?: () => void }) {
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await fetch('/api/revolut', {
+      const res = await fetch('/api/import', {
         method: 'POST',
         body: formData,
       });
@@ -51,11 +51,11 @@ export default function SyncButton({ onSync }: { onSync?: () => void }) {
     <div className="relative">
       <label className={`inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer ${importing ? 'opacity-50 pointer-events-none' : ''}`}>
         <Upload className={`w-4 h-4 ${importing ? 'animate-pulse' : ''}`} />
-        {importing ? 'Importeren...' : 'Importeer CSV'}
+        {importing ? 'Importeren...' : 'Importeer'}
         <input
           ref={fileInputRef}
           type="file"
-          accept=".csv"
+          accept=".csv,.sta,.mt940,.txt"
           onChange={handleFileUpload}
           className="hidden"
           disabled={importing}

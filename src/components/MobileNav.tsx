@@ -9,6 +9,7 @@ const navItems = [
   { href: '/', label: 'Overzicht' },
   { href: '/transactions', label: 'Transacties' },
   { href: '/invoices', label: 'Facturen' },
+  { href: '/kasboek', label: 'Kasboek' },
   { href: '/btw', label: 'BTW' },
   { href: '/relaties', label: 'Klanten' },
   { href: '/settings', label: 'Instellingen' },
@@ -21,7 +22,7 @@ export default function MobileNav() {
   return (
     <>
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 flex items-center justify-between px-4 py-3">
-        <h1 className="text-lg font-bold text-gray-900">Algo Studio</h1>
+        <h1 className="text-lg font-bold text-gray-900">Cijferwerk</h1>
         <button onClick={() => setOpen(!open)} className="p-2 text-gray-600 hover:text-gray-900">
           {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
