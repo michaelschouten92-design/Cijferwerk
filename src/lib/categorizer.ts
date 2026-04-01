@@ -112,10 +112,11 @@ export async function categoriseer(
  * Categoriseer en sla een batch transacties op
  */
 export async function categoriseerEnSlaOp(transacties: ParsedTransaction[]) {
-  const resultaten = [];
+  // Stap 1: Bereid alle data voor (categoriseer + deduplicatie check)
+  const creates: any[] = [];
 
   for (const tx of transacties) {
-    // Check of transactie al bestaat (deduplicatie)
+    // Deduplicatie check
     if (tx.revolutTransId) {
       const existing = await prisma.transactie.findUnique({
         where: { revolutTransId: tx.revolutTransId },
@@ -124,12 +125,9 @@ export async function categoriseerEnSlaOp(transacties: ParsedTransaction[]) {
     }
 
     const cat = await categoriseer(tx.tegenpartij, tx.omschrijving, tx.bedrag, tx.richting);
+    const categorie = await prisma.categorie.findUnique({ where: { code: cat.categorieCode } });
 
-    const categorie = await prisma.categorie.findUnique({
-      where: { code: cat.categorieCode },
-    });
-
-    const saved = await prisma.transactie.create({
+    creates.push({
       data: {
         datum: tx.datum,
         omschrijving: tx.omschrijving,
@@ -144,12 +142,20 @@ export async function categoriseerEnSlaOp(transacties: ParsedTransaction[]) {
         status: 'Betaald via Bank',
         soort: 'Overig',
       },
+      meta: { categorieNaam: cat.categorieNaam, relatieNaam: cat.relatieNaam },
     });
-
-    resultaten.push({ ...saved, categorieNaam: cat.categorieNaam, relatieNaam: cat.relatieNaam });
   }
 
-  return resultaten;
+  // Stap 2: Alles in één database-transactie schrijven (atomair)
+  const resultaten = await prisma.$transaction(
+    creates.map(c => prisma.transactie.create({ data: c.data }))
+  );
+
+  return resultaten.map((saved, i) => ({
+    ...saved,
+    categorieNaam: creates[i].meta.categorieNaam,
+    relatieNaam: creates[i].meta.relatieNaam,
+  }));
 }
 
 function round2(n: number): number {

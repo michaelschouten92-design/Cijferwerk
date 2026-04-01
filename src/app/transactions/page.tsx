@@ -48,6 +48,7 @@ export default function TransactiesPage() {
   const [categorieen, setCategorieen] = useState<Categorie[]>([]);
   const [relaties, setRelaties] = useState<Relatie[]>([]);
   const [removingId, setRemovingId] = useState<number | null>(null);
+  const [processingId, setProcessingId] = useState<number | null>(null);
 
   const [jaar, setJaar] = useState(new Date().getFullYear());
   const { toast } = useToast();
@@ -81,10 +82,11 @@ export default function TransactiesPage() {
   const voortgangPct = totaal > 0 ? Math.round((verwerkt / totaal) * 100) : 100;
 
   async function quickCategorize(txId: number, categorieId: number, btwTarief: number) {
+    if (processingId === txId) return; // Dubbelklik bescherming
     const tx = transacties.find(t => t.id === txId);
     if (!tx) return;
 
-    // Start slide-out animatie
+    setProcessingId(txId);
     setRemovingId(txId);
 
     const btwBedrag = Math.round(tx.bedragExclBtw * btwTarief * 100) / 100;
@@ -119,6 +121,7 @@ export default function TransactiesPage() {
     // Wacht op animatie, dan reload
     setTimeout(() => {
       setRemovingId(null);
+      setProcessingId(null);
       toast('Transactie verwerkt');
       loadTransacties();
     }, 300);

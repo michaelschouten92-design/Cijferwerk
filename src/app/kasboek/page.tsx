@@ -27,7 +27,7 @@ export default function KasboekPage() {
   const [categorieen, setCategorieen] = useState<Categorie[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const jaar = new Date().getFullYear();
+  const [jaar, setJaar] = useState(new Date().getFullYear());
 
   function load() {
     fetch(`/api/transactions?jaar=${jaar}`).then(r => r.json()).then((all: any[]) => {
@@ -36,7 +36,7 @@ export default function KasboekPage() {
     fetch('/api/categories').then(r => r.json()).then(d => setCategorieen(d.categorieen));
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [jaar]);
 
   const totaalIn = transacties.filter(t => t.richting === 'verkoop').reduce((s, t) => s + t.bedragExclBtw + t.btwBedrag, 0);
   const totaalUit = transacties.filter(t => t.richting === 'inkoop').reduce((s, t) => s + t.bedragExclBtw + t.btwBedrag, 0);
@@ -50,9 +50,14 @@ export default function KasboekPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-        <div>
+        <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Kasboek</h2>
-          <p className="text-sm text-gray-500">Contante inkomsten en uitgaven</p>
+          <select value={jaar} onChange={e => setJaar(parseInt(e.target.value))}
+            className="px-2 py-1 border border-gray-200 rounded-lg text-sm text-gray-600">
+            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
         </div>
         <button onClick={() => setShowAdd(true)}
           className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors">

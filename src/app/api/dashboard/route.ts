@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { genereerBtwAangifte } from '@/lib/btw';
+import { berekenAfschrijvingen, round2 as sharedRound2 } from '@/lib/calculations';
 
 /**
  * GET /api/dashboard?jaar=2026 - Dashboard overzichtsdata
@@ -26,21 +27,9 @@ export async function GET(req: NextRequest) {
   const omzet = round2(verkoop.reduce((s, t) => s + t.bedragExclBtw, 0));
   const kosten = round2(inkoop.reduce((s, t) => s + t.bedragExclBtw, 0));
 
-  // Afschrijvingen meenemen in winst (pro-rata per maand)
+  // Afschrijvingen — gedeelde berekening voor consistentie
   const activa = await prisma.vastActief.findMany();
-  const jaareinde = new Date(jaar, 11, 31);
-  const afschrijvingen = round2(activa.reduce((s, a) => {
-    const afschrijfbaar = a.aanschafWaarde - a.restwaarde;
-    const jaarAfschr = afschrijfbaar / a.levensduurJaren;
-    const aanschaf = new Date(a.aanschafDatum);
-    if (aanschaf >= jaareinde) return s; // nog niet aangeschaft dit jaar
-    const maandenInGebruik = Math.min(12, (jaareinde.getFullYear() - aanschaf.getFullYear()) * 12 + (jaareinde.getMonth() - aanschaf.getMonth()) + 1);
-    const proRata = maandenInGebruik >= 12 ? jaarAfschr : round2(jaarAfschr * maandenInGebruik / 12);
-    const totaalAfgeschreven = jaarAfschr * Math.floor((jaareinde.getTime() - aanschaf.getTime()) / (365.25 * 86400000));
-    if (totaalAfgeschreven >= afschrijfbaar) return s; // volledig afgeschreven
-    return s + proRata;
-  }, 0));
-
+  const afschrijvingen = berekenAfschrijvingen(activa, jaar);
   const winst = round2(omzet - kosten - afschrijvingen);
 
   // Kosten per categorie

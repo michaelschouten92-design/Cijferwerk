@@ -661,6 +661,7 @@ function KoppelModal({ factuur, onClose, onSave }: { factuur: Factuur; onClose: 
   }, []);
 
   async function koppel(transactieId: number) {
+    if (!confirm(`Transactie koppelen aan factuur ${factuur.nummer} en als betaald markeren?`)) return;
     await fetch('/api/transactions', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

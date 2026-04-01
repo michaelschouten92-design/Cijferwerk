@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { genereerBtwAangifte } from '@/lib/btw';
 import { generateTransactieCSV, generateBtwAangifteHTML, generateWinstVerliesHTML, generateBalansHTML } from '@/lib/export';
 import { genereerFactuurHTML } from '@/lib/invoice-pdf';
+import { berekenAfschrijvingen } from '@/lib/calculations';
 import archiver from 'archiver';
 import { PassThrough } from 'stream';
 
@@ -40,18 +41,7 @@ export async function GET(req: NextRequest) {
 
   const omzet = round2(verkoop.reduce((s, t) => s + t.bedragExclBtw, 0));
   const kosten = round2(inkoop.reduce((s, t) => s + t.bedragExclBtw, 0));
-  const jaareindeAfschr = new Date(jaar, 11, 31);
-  const afschrijvingen = round2(vasteActiva.reduce((s, a) => {
-    const afschrijfbaar = a.aanschafWaarde - a.restwaarde;
-    const jaarAfschr = afschrijfbaar / a.levensduurJaren;
-    const aanschaf = new Date(a.aanschafDatum);
-    if (aanschaf >= jaareindeAfschr) return s;
-    const maandenInGebruik = Math.min(12, (jaareindeAfschr.getFullYear() - aanschaf.getFullYear()) * 12 + (jaareindeAfschr.getMonth() - aanschaf.getMonth()) + 1);
-    const proRata = maandenInGebruik >= 12 ? jaarAfschr : round2(jaarAfschr * maandenInGebruik / 12);
-    const totaalAfgeschreven = jaarAfschr * Math.floor((jaareindeAfschr.getTime() - aanschaf.getTime()) / (365.25 * 86400000));
-    if (totaalAfgeschreven >= afschrijfbaar) return s;
-    return s + proRata;
-  }, 0));
+  const afschrijvingen = berekenAfschrijvingen(vasteActiva, jaar);
   const winst = round2(omzet - kosten - afschrijvingen);
 
   const omzetPerMaand = Array.from({ length: 12 }, (_, m) =>

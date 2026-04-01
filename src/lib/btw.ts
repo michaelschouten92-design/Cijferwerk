@@ -102,8 +102,9 @@ export async function genereerBtwAangifte(jaar: number, kwartaal: number): Promi
     include: { categorie: true },
   });
 
-  // Privétransacties uitsluiten
-  const zakelijk = transacties.filter(t => !t.categorie || t.categorie.type !== 'prive');
+  // Privé en ongecategoriseerde transacties uitsluiten uit BTW
+  // Ongecategoriseerde transacties hebben btwTarief=0 en geen betrouwbare classificatie
+  const zakelijk = transacties.filter(t => t.categorie && t.categorie.type !== 'prive');
   const verkoop = zakelijk.filter(t => t.richting === 'verkoop');
   const inkoop = zakelijk.filter(t => t.richting === 'inkoop');
 

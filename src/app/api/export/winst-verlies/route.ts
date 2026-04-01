@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { generateWinstVerliesHTML } from '@/lib/export';
 import type { WinstVerliesData } from '@/lib/export';
+import { berekenAfschrijvingen } from '@/lib/calculations';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -34,20 +35,9 @@ export async function GET(req: NextRequest) {
     return Math.round(maandTx.reduce((s, t) => s + t.bedragExclBtw, 0) * 100) / 100;
   });
 
-  // Afschrijvingen berekenen vanuit vaste activa (pro-rata per maand)
+  // Afschrijvingen — gedeelde berekening voor consistentie
   const activa = await prisma.vastActief.findMany();
-  const jaareinde = new Date(jaar, 11, 31);
-  const afschrijvingen = Math.round(activa.reduce((s, a) => {
-    const afschrijfbaar = a.aanschafWaarde - a.restwaarde;
-    const jaarAfschr = afschrijfbaar / a.levensduurJaren;
-    const aanschaf = new Date(a.aanschafDatum);
-    if (aanschaf >= jaareinde) return s; // nog niet aangeschaft dit jaar
-    const maandenInGebruik = Math.min(12, (jaareinde.getFullYear() - aanschaf.getFullYear()) * 12 + (jaareinde.getMonth() - aanschaf.getMonth()) + 1);
-    const proRata = maandenInGebruik >= 12 ? jaarAfschr : Math.round(jaarAfschr * maandenInGebruik / 12 * 100) / 100;
-    const totaalAfgeschreven = jaarAfschr * Math.floor((jaareinde.getTime() - aanschaf.getTime()) / (365.25 * 86400000));
-    if (totaalAfgeschreven >= afschrijfbaar) return s; // volledig afgeschreven
-    return s + proRata;
-  }, 0) * 100) / 100;
+  const afschrijvingen = berekenAfschrijvingen(activa, jaar);
 
   const winst = Math.round((omzet - kosten - afschrijvingen) * 100) / 100;
 

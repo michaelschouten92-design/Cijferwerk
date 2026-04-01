@@ -41,16 +41,34 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const restwaarde = Math.max(0, body.restwaarde ?? 0);
-  if (restwaarde >= body.aanschafWaarde) {
+  const levensduur = body.levensduurJaren ?? 5;
+  const aanschafWaarde = Math.abs(body.aanschafWaarde || 0);
+
+  // Validaties
+  if (!body.naam || body.naam.trim().length === 0) {
+    return NextResponse.json({ error: 'Naam is verplicht' }, { status: 400 });
+  }
+  if (aanschafWaarde <= 0) {
+    return NextResponse.json({ error: 'Aanschafwaarde moet groter dan 0 zijn' }, { status: 400 });
+  }
+  if (restwaarde >= aanschafWaarde) {
     return NextResponse.json({ error: 'Restwaarde moet lager zijn dan aanschafwaarde' }, { status: 400 });
   }
+  if (levensduur < 1) {
+    return NextResponse.json({ error: 'Levensduur moet minimaal 1 jaar zijn' }, { status: 400 });
+  }
+  const aanschafDatum = new Date(body.aanschafDatum);
+  if (isNaN(aanschafDatum.getTime())) {
+    return NextResponse.json({ error: 'Ongeldige aanschafdatum' }, { status: 400 });
+  }
+
   const actief = await prisma.vastActief.create({
     data: {
-      naam: body.naam,
-      aanschafDatum: new Date(body.aanschafDatum),
-      aanschafWaarde: Math.abs(body.aanschafWaarde),
+      naam: body.naam.trim(),
+      aanschafDatum,
+      aanschafWaarde,
       restwaarde,
-      levensduurJaren: body.levensduurJaren ?? 5,
+      levensduurJaren: levensduur,
       notitie: body.notitie || null,
     },
   });

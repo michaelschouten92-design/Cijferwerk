@@ -155,7 +155,7 @@ export function generateBalansHTML(data: BalansData, bedrijf?: BedrijfsInfo): st
   const btwVordering = data.btwPositie < 0 ? Math.abs(data.btwPositie) : 0;
   const btwSchuld = data.btwPositie > 0 ? data.btwPositie : 0;
 
-  const totaalActiva = data.vasteActiva + data.liquidMiddelen + data.debiteuren + btwVordering;
+  const totaalActiva = Math.round((data.vasteActiva + data.liquidMiddelen + data.debiteuren + btwVordering) * 100) / 100;
   const eigenVermogen = data.beginVermogen + data.winst;
   const totaalPassiva = eigenVermogen + btwSchuld;
 
@@ -208,6 +208,12 @@ export function generateBalansHTML(data: BalansData, bedrijf?: BedrijfsInfo): st
       </table>
     </div>
   </div>
+
+  ${Math.abs(totaalActiva - totaalPassiva) > 0.01 ? `
+  <div style="margin-top:20px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#991b1b;font-size:13px;">
+    <strong>Let op:</strong> Activa (${f(totaalActiva)}) en Passiva (${f(totaalPassiva)}) zijn niet in balans.
+    Verschil: ${f(Math.abs(totaalActiva - totaalPassiva))}. Controleer de boekingen.
+  </div>` : ''}
 
   <div class="footer">
     Gegenereerd op ${new Date().toLocaleDateString('nl-NL')}${naam ? ` — ${naam}` : ''}
