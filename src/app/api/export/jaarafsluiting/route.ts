@@ -70,7 +70,8 @@ export async function GET(req: NextRequest) {
   archive.pipe(passthrough);
 
   // 1. Winst & Verlies
-  const wvHtml = generateWinstVerliesHTML({ jaar, omzet, kosten, afschrijvingen, winst, kostenPerCategorie, omzetPerMaand });
+  const bedrijf = settings ? { naam: settings.bedrijfNaam || '', kvk: settings.bedrijfKvk || '' } : undefined;
+  const wvHtml = generateWinstVerliesHTML({ jaar, omzet, kosten, afschrijvingen, winst, kostenPerCategorie, omzetPerMaand }, bedrijf);
   archive.append(wvHtml, { name: `Winst-Verlies-${jaar}.html` });
 
   // 2. Balans
@@ -105,13 +106,13 @@ export async function GET(req: NextRequest) {
     btwPositie: round2(btwPositie),
     beginVermogen: settings?.beginVermogen ?? 0,
     winst,
-  });
+  }, bedrijf);
   archive.append(balansHtml, { name: `Balans-${jaar}.html` });
 
   // 3. BTW per kwartaal
   for (let q = 1; q <= 4; q++) {
     const aangifte = await genereerBtwAangifte(jaar, q);
-    const btwHtml = generateBtwAangifteHTML(aangifte, q, jaar);
+    const btwHtml = generateBtwAangifteHTML(aangifte, q, jaar, bedrijf);
     archive.append(btwHtml, { name: `BTW-Q${q}-${jaar}.html` });
   }
 
@@ -136,7 +137,7 @@ export async function GET(req: NextRequest) {
   }
 
   // 6. Alle facturen als HTML
-  const bedrijf = {
+  const bedrijfVolledig = {
     naam: settings?.bedrijfNaam || process.env.COMPANY_NAME || 'Mijn Bedrijf',
     contactpersoon: settings?.bedrijfContact || '',
     adres: settings?.bedrijfAdres || '',
@@ -154,7 +155,7 @@ export async function GET(req: NextRequest) {
       datum: f.datum.toLocaleDateString('nl-NL'),
       vervaldatum: f.vervaldatum.toLocaleDateString('nl-NL'),
       klant: { naam: f.relatie.naam, adres: f.relatie.adres || undefined, postcode: f.relatie.postcode || undefined, plaats: f.relatie.plaats || undefined },
-      bedrijf,
+      bedrijf: bedrijfVolledig,
       regels: f.regels.map(r => ({ aantal: r.aantal, beschrijving: r.beschrijving, stuksprijs: r.stuksprijs, btwPercentage: r.btwPercentage })),
       logo: settings?.factuurLogo,
       kleur: settings?.factuurKleur,

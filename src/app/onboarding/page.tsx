@@ -212,13 +212,13 @@ export default function OnboardingPage() {
         <p className="text-gray-500 mb-8">Je cijferwerk is klaar voor gebruik.</p>
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 text-left mb-6">
-          <h3 className="font-medium text-gray-900 mb-3">Wat je nu kunt doen:</h3>
-          <ul className="text-sm text-gray-600 space-y-2">
-            <li>• Transacties verwerken via de <strong>Transacties</strong> pagina</li>
-            <li>• Facturen aanmaken via de <strong>Facturen</strong> pagina</li>
-            <li>• BTW-overzicht bekijken via <strong>BTW</strong></li>
-            <li>• Instellingen aanpassen wanneer je wilt</li>
-          </ul>
+          <h3 className="font-medium text-gray-900 mb-3">Aan de slag — zo werkt het:</h3>
+          <ol className="text-sm text-gray-600 space-y-2 list-decimal list-inside">
+            <li><strong>Transacties categoriseren</strong> — Ga naar Transacties en koppel elke betaling aan de juiste categorie (inkomsten, kosten, etc.)</li>
+            <li><strong>Facturen versturen</strong> — Maak facturen aan voor je klanten en verstuur ze per e-mail</li>
+            <li><strong>BTW-aangifte</strong> — Bekijk elk kwartaal je BTW-overzicht en geef aan via de Belastingdienst</li>
+            <li><strong>Jaarafsluiting</strong> — Download aan het eind van het jaar je complete boekhouding als ZIP</li>
+          </ol>
         </div>
 
         <button onClick={finish}

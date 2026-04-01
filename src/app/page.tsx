@@ -275,6 +275,31 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Jaarafsluiting checklist — toon alleen voor het huidige of vorige jaar */}
+      {(jaar === new Date().getFullYear() || jaar === new Date().getFullYear() - 1) && (
+        <div className="bg-white rounded-xl shadow-card p-6 mb-6">
+          <h3 className="font-semibold text-gray-900 mb-3">Jaarafsluiting {jaar}</h3>
+          <p className="text-xs text-gray-400 mb-4">Zorg dat alles klopt voordat je de jaarafsluiting downloadt.</p>
+          <div className="space-y-2">
+            {[
+              { ok: data.ongecategoriseerd === 0, label: 'Alle transacties gecategoriseerd', link: '/transactions' },
+              { ok: data.openstaandeFacturen.length === 0, label: 'Geen openstaande facturen', link: '/invoices' },
+              { ok: data.aantalTransacties > 0, label: 'Transacties geïmporteerd', link: '/settings' },
+            ].map((item, i) => (
+              <Link key={i} href={item.link}
+                className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+                  item.ok ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'
+                }`}>
+                  {item.ok ? '✓' : '!'}
+                </span>
+                <span className={item.ok ? 'text-gray-500' : 'text-gray-900 font-medium'}>{item.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {data.laatsteSync && (
         <p className="text-xs text-gray-400">
           Laatste import: {new Date(data.laatsteSync.timestamp).toLocaleString('nl-NL')} — {data.laatsteSync.melding}

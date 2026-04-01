@@ -51,9 +51,11 @@ export async function GET(req: NextRequest) {
 
   const winst = Math.round((omzet - kosten - afschrijvingen) * 100) / 100;
 
+  const settings = await prisma.appSettings.findFirst({ where: { id: 1 } });
+  const bedrijf = settings ? { naam: settings.bedrijfNaam || '', kvk: settings.bedrijfKvk || '' } : undefined;
   const html = generateWinstVerliesHTML({
     jaar, omzet, kosten, afschrijvingen, winst, kostenPerCategorie, omzetPerMaand,
-  });
+  }, bedrijf);
 
   return new NextResponse(html, {
     headers: {

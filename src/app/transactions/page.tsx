@@ -191,6 +191,7 @@ export default function TransactiesPage() {
       {/* Actie nodig: voortgangsbalk + snelle categorisatie */}
       {tab === 'actie' && ongecategoriseerd > 0 && (
         <>
+          <p className="text-xs text-gray-400 mb-3">Kies per transactie de juiste categorie. Dit bepaalt je BTW-aangifte en winstberekening. Klik op een categorie om direct te verwerken.</p>
           <div className="mb-4">
             <div className="flex items-center justify-between text-sm mb-1.5">
               <span className="text-gray-600 font-medium">{voortgangPct}% verwerkt</span>

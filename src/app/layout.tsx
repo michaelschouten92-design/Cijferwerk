@@ -16,7 +16,7 @@ const navItems = [
   { href: '/invoices', label: 'Facturen', icon: <FileText className="w-5 h-5" /> },
   { href: '/kasboek', label: 'Kasboek', icon: <BookOpen className="w-5 h-5" /> },
   { href: '/btw', label: 'BTW', icon: <Percent className="w-5 h-5" /> },
-  { href: '/relaties', label: 'Klanten', icon: <Users className="w-5 h-5" /> },
+  { href: '/relaties', label: 'Relaties', icon: <Users className="w-5 h-5" /> },
   { href: '/settings', label: 'Instellingen', icon: <Settings className="w-5 h-5" /> },
 ];
 

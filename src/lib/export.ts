@@ -14,6 +14,11 @@ interface TransactieExport {
   status: string;
 }
 
+interface BedrijfsInfo {
+  naam: string;
+  kvk: string;
+}
+
 /**
  * Genereer CSV-string van transacties
  */
@@ -50,17 +55,19 @@ interface BtwAangifteData {
 /**
  * Genereer BTW-aangifte als printbare HTML
  */
-export function generateBtwAangifteHTML(aangifte: BtwAangifteData, kwartaal: number, jaar: number): string {
+export function generateBtwAangifteHTML(aangifte: BtwAangifteData, kwartaal: number, jaar: number, bedrijf?: BedrijfsInfo): string {
   const f = (n: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n);
+  const naam = bedrijf?.naam || 'Mijn Bedrijf';
+  const kvk = bedrijf?.kvk ? `KVK ${bedrijf.kvk}` : '';
 
   return `<!DOCTYPE html>
 <html lang="nl">
 <head>
   <meta charset="utf-8">
-  <title>BTW Aangifte Q${kwartaal} ${jaar} - Mijn Bedrijf</title>
+  <title>BTW Aangifte Q${kwartaal} ${jaar} - ${naam}</title>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 700px; margin: 40px auto; color: #1a1a1a; }
-    h1 { font-size: 24px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; }
+    h1 { font-size: 24px; border-bottom: 2px solid #4f46e5; padding-bottom: 8px; }
     h2 { font-size: 16px; color: #666; margin-top: 0; }
     table { width: 100%; border-collapse: collapse; margin: 20px 0; }
     th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
@@ -75,7 +82,7 @@ export function generateBtwAangifteHTML(aangifte: BtwAangifteData, kwartaal: num
 </head>
 <body>
   <h1>BTW Aangifte</h1>
-  <h2>Kwartaal ${kwartaal} — ${jaar} | Mijn Bedrijf | KVK 96041420</h2>
+  <h2>Kwartaal ${kwartaal} — ${jaar}${naam ? ` | ${naam}` : ''}${kvk ? ` | ${kvk}` : ''}</h2>
 
   <table>
     <thead>
@@ -121,7 +128,7 @@ export function generateBtwAangifteHTML(aangifte: BtwAangifteData, kwartaal: num
   </table>
 
   <div class="footer">
-    Gegenereerd op ${new Date().toLocaleDateString('nl-NL')} — Mijn Bedrijf
+    Gegenereerd op ${new Date().toLocaleDateString('nl-NL')}${naam ? ` — ${naam}` : ''}
   </div>
 </body>
 </html>`;
@@ -132,7 +139,7 @@ interface BalansData {
   vasteActiva: number;
   liquidMiddelen: number;
   debiteuren: number;
-  btwPositie: number; // positief = schuld, negatief = vordering
+  btwPositie: number;
   beginVermogen: number;
   winst: number;
 }
@@ -140,8 +147,10 @@ interface BalansData {
 /**
  * Genereer Balansrapport als printbare HTML
  */
-export function generateBalansHTML(data: BalansData): string {
+export function generateBalansHTML(data: BalansData, bedrijf?: BedrijfsInfo): string {
   const f = (n: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n);
+  const naam = bedrijf?.naam || 'Mijn Bedrijf';
+  const kvk = bedrijf?.kvk ? `KVK ${bedrijf.kvk}` : '';
 
   const btwVordering = data.btwPositie < 0 ? Math.abs(data.btwPositie) : 0;
   const btwSchuld = data.btwPositie > 0 ? data.btwPositie : 0;
@@ -154,10 +163,10 @@ export function generateBalansHTML(data: BalansData): string {
 <html lang="nl">
 <head>
   <meta charset="utf-8">
-  <title>Balans per 31-12-${data.jaar} - Mijn Bedrijf</title>
+  <title>Balans per 31-12-${data.jaar} - ${naam}</title>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 40px auto; color: #1a1a1a; }
-    h1 { font-size: 24px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; }
+    h1 { font-size: 24px; border-bottom: 2px solid #4f46e5; padding-bottom: 8px; }
     h2 { font-size: 16px; color: #666; margin-top: 0; }
     h3 { font-size: 14px; margin: 24px 0 8px; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
@@ -174,7 +183,7 @@ export function generateBalansHTML(data: BalansData): string {
 </head>
 <body>
   <h1>Balans</h1>
-  <h2>Per 31 december ${data.jaar} | Mijn Bedrijf | KVK 96041420</h2>
+  <h2>Per 31 december ${data.jaar}${naam ? ` | ${naam}` : ''}${kvk ? ` | ${kvk}` : ''}</h2>
 
   <div class="section">
     <div>
@@ -201,7 +210,7 @@ export function generateBalansHTML(data: BalansData): string {
   </div>
 
   <div class="footer">
-    Gegenereerd op ${new Date().toLocaleDateString('nl-NL')} — Mijn Bedrijf
+    Gegenereerd op ${new Date().toLocaleDateString('nl-NL')}${naam ? ` — ${naam}` : ''}
   </div>
 </body>
 </html>`;
@@ -220,9 +229,11 @@ export interface WinstVerliesData {
 /**
  * Genereer Winst & Verlies overzicht als printbare HTML
  */
-export function generateWinstVerliesHTML(data: WinstVerliesData): string {
+export function generateWinstVerliesHTML(data: WinstVerliesData, bedrijf?: BedrijfsInfo): string {
   const f = (n: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n);
   const maandNamen = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
+  const naam = bedrijf?.naam || 'Mijn Bedrijf';
+  const kvk = bedrijf?.kvk ? `KVK ${bedrijf.kvk}` : '';
 
   const kostenRijen = Object.entries(data.kostenPerCategorie)
     .sort(([, a], [, b]) => b - a)
@@ -238,10 +249,10 @@ export function generateWinstVerliesHTML(data: WinstVerliesData): string {
 <html lang="nl">
 <head>
   <meta charset="utf-8">
-  <title>Winst & Verlies ${data.jaar} - Mijn Bedrijf</title>
+  <title>Winst & Verlies ${data.jaar} - ${naam}</title>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 700px; margin: 40px auto; color: #1a1a1a; }
-    h1 { font-size: 24px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; }
+    h1 { font-size: 24px; border-bottom: 2px solid #4f46e5; padding-bottom: 8px; }
     h2 { font-size: 16px; color: #666; margin-top: 0; }
     h3 { font-size: 14px; margin: 24px 0 8px; color: #374151; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
@@ -257,7 +268,7 @@ export function generateWinstVerliesHTML(data: WinstVerliesData): string {
 </head>
 <body>
   <h1>Winst & Verlies Overzicht</h1>
-  <h2>${data.jaar} | Mijn Bedrijf | KVK 96041420</h2>
+  <h2>${data.jaar}${naam ? ` | ${naam}` : ''}${kvk ? ` | ${kvk}` : ''}</h2>
 
   <h3>Omzet</h3>
   <table>
@@ -286,7 +297,7 @@ export function generateWinstVerliesHTML(data: WinstVerliesData): string {
   </table>
 
   <div class="footer">
-    Gegenereerd op ${new Date().toLocaleDateString('nl-NL')} — Mijn Bedrijf
+    Gegenereerd op ${new Date().toLocaleDateString('nl-NL')}${naam ? ` — ${naam}` : ''}
   </div>
 </body>
 </html>`;

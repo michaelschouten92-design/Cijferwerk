@@ -7,7 +7,7 @@ interface ParsedTransaction {
   revolutTransId: string;
   datum: Date;
   omschrijving: string;
-  bedragExclBtw: number;
+  bedrag: number; // bruto bedrag uit bankafschrift (incl. BTW)
   tegenpartij: string;
   richting: 'inkoop' | 'verkoop';
 }
@@ -89,7 +89,7 @@ function createRevolutParser(headers: string[]): BankParser {
     const ref = refIdx !== -1 ? cols[refIdx] || '' : '';
     const dateStr = cols[completedIdx] || cols[startedIdx] || '';
     const id = idIdx !== -1 && cols[idIdx] ? cols[idIdx] : `csv-${dateStr}-${amount}-${desc}`.substring(0, 200);
-    return { revolutTransId: id, datum: parseDate(dateStr), omschrijving: ref && ref !== desc ? `${desc} — ${ref}` : desc, bedragExclBtw: Math.abs(amount), tegenpartij: desc, richting: amount > 0 ? 'verkoop' : 'inkoop' };
+    return { revolutTransId: id, datum: parseDate(dateStr), omschrijving: ref && ref !== desc ? `${desc} — ${ref}` : desc, bedrag: Math.abs(amount), tegenpartij: desc, richting: amount > 0 ? 'verkoop' : 'inkoop' };
   }};
 }
 
@@ -107,7 +107,7 @@ function createINGParser(headers: string[]): BankParser {
     const med = medIdx !== -1 ? cols[medIdx] || '' : '';
     const dateStr = cols[datumIdx] || '';
     const isInkomst = afBijIdx !== -1 ? cols[afBijIdx]?.toLowerCase() === 'bij' : bedrag > 0;
-    return { revolutTransId: `ing-${dateStr}-${bedrag}-${naam}`.substring(0, 200), datum: parseDate(dateStr), omschrijving: med ? `${naam} — ${med}` : naam, bedragExclBtw: Math.abs(bedrag), tegenpartij: naam, richting: isInkomst ? 'verkoop' : 'inkoop' };
+    return { revolutTransId: `ing-${dateStr}-${bedrag}-${naam}`.substring(0, 200), datum: parseDate(dateStr), omschrijving: med ? `${naam} — ${med}` : naam, bedrag: Math.abs(bedrag), tegenpartij: naam, richting: isInkomst ? 'verkoop' : 'inkoop' };
   }};
 }
 
@@ -123,7 +123,7 @@ function createRaboParser(headers: string[]): BankParser {
     const naam = cols[naamIdx] || '';
     const omschr = omschrIdx !== -1 ? cols[omschrIdx] || '' : '';
     const dateStr = cols[datumIdx] || '';
-    return { revolutTransId: `rabo-${dateStr}-${bedrag}-${naam}`.substring(0, 200), datum: parseDate(dateStr), omschrijving: omschr ? `${naam} — ${omschr}` : naam, bedragExclBtw: Math.abs(bedrag), tegenpartij: naam, richting: bedrag > 0 ? 'verkoop' : 'inkoop' };
+    return { revolutTransId: `rabo-${dateStr}-${bedrag}-${naam}`.substring(0, 200), datum: parseDate(dateStr), omschrijving: omschr ? `${naam} — ${omschr}` : naam, bedrag: Math.abs(bedrag), tegenpartij: naam, richting: bedrag > 0 ? 'verkoop' : 'inkoop' };
   }};
 }
 
@@ -138,7 +138,7 @@ function createABNParser(headers: string[]): BankParser {
     const naam = cols[naamIdx] || '';
     const omschr = omschrIdx !== -1 ? cols[omschrIdx] || '' : '';
     const dateStr = cols[datumIdx] || '';
-    return { revolutTransId: `abn-${dateStr}-${bedrag}-${naam}`.substring(0, 200), datum: parseDate(dateStr), omschrijving: omschr ? `${naam} — ${omschr}` : naam, bedragExclBtw: Math.abs(bedrag), tegenpartij: naam, richting: bedrag > 0 ? 'verkoop' : 'inkoop' };
+    return { revolutTransId: `abn-${dateStr}-${bedrag}-${naam}`.substring(0, 200), datum: parseDate(dateStr), omschrijving: omschr ? `${naam} — ${omschr}` : naam, bedrag: Math.abs(bedrag), tegenpartij: naam, richting: bedrag > 0 ? 'verkoop' : 'inkoop' };
   }};
 }
 
@@ -155,7 +155,7 @@ function createBunqParser(headers: string[]): BankParser {
     const desc = descIdx !== -1 ? cols[descIdx] || '' : '';
     const dateStr = cols[datumIdx] || '';
     const omschr = naam && desc ? `${naam} — ${desc}` : naam || desc || 'Geen omschrijving';
-    return { revolutTransId: `bunq-${dateStr}-${bedrag}-${omschr}`.substring(0, 200), datum: parseDate(dateStr), omschrijving: omschr, bedragExclBtw: Math.abs(bedrag), tegenpartij: naam || desc, richting: bedrag > 0 ? 'verkoop' : 'inkoop' };
+    return { revolutTransId: `bunq-${dateStr}-${bedrag}-${omschr}`.substring(0, 200), datum: parseDate(dateStr), omschrijving: omschr, bedrag: Math.abs(bedrag), tegenpartij: naam || desc, richting: bedrag > 0 ? 'verkoop' : 'inkoop' };
   }};
 }
 
@@ -170,7 +170,7 @@ function createGenericParser(headers: string[]): BankParser {
     if (bedrag === 0) return null;
     const desc = descIdx !== -1 ? cols[descIdx] || 'Geen omschrijving' : 'Geen omschrijving';
     const dateStr = cols[datumIdx] || '';
-    return { revolutTransId: `csv-${dateStr}-${bedrag}-${desc}`.substring(0, 200), datum: parseDate(dateStr), omschrijving: desc, bedragExclBtw: Math.abs(bedrag), tegenpartij: desc, richting: bedrag > 0 ? 'verkoop' : 'inkoop' };
+    return { revolutTransId: `csv-${dateStr}-${bedrag}-${desc}`.substring(0, 200), datum: parseDate(dateStr), omschrijving: desc, bedrag: Math.abs(bedrag), tegenpartij: desc, richting: bedrag > 0 ? 'verkoop' : 'inkoop' };
   }};
 }
 
@@ -216,7 +216,7 @@ function parseMT940(content: string): ParseResult {
             revolutTransId: `mt940-${dateStr}-${amount}-${dc}-${tegenpartij}`.substring(0, 200),
             datum: new Date(year, month, day),
             omschrijving: info.substring(0, 200) || tegenpartij,
-            bedragExclBtw: amount,
+            bedrag: amount,
             tegenpartij,
             richting: dc === 'C' ? 'verkoop' : 'inkoop',
           });

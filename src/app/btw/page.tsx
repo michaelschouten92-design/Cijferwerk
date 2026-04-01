@@ -88,6 +88,9 @@ export default function BtwPage() {
             <p className="text-sm text-gray-400 mt-2">
               Indienen vóór {BTW_DEADLINES[aangifteKwartaal]} {aangifteKwartaal === 4 ? jaar + 1 : jaar}
             </p>
+            <p className="text-xs text-gray-300 mt-3">
+              Ga naar <a href="https://mijn.belastingdienst.nl" target="_blank" rel="noopener" className="text-brand-500 hover:text-brand-600 underline">mijn.belastingdienst.nl</a> → Omzetbelasting → Vul de bedragen hieronder in bij de rubrieken
+            </p>
           </div>
 
           {/* Simpele uitleg met iconen */}

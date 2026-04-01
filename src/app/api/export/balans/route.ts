@@ -58,6 +58,7 @@ export async function GET(req: NextRequest) {
   const afschrijvingen = Math.round(vasteActiva.reduce((s, a) => s + (a.aanschafWaarde - a.restwaarde) / a.levensduurJaren, 0) * 100) / 100;
   const winst = Math.round((omzet - kosten - afschrijvingen) * 100) / 100;
 
+  const bedrijf = settings ? { naam: settings.bedrijfNaam || '', kvk: settings.bedrijfKvk || '' } : undefined;
   const html = generateBalansHTML({
     jaar,
     vasteActiva: boekwaardeActiva,
@@ -66,7 +67,7 @@ export async function GET(req: NextRequest) {
     btwPositie,
     beginVermogen,
     winst,
-  });
+  }, bedrijf);
 
   return new NextResponse(html, {
     headers: {

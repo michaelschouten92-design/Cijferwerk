@@ -123,7 +123,7 @@ export async function categoriseerEnSlaOp(transacties: ParsedTransaction[]) {
       if (existing) continue;
     }
 
-    const cat = await categoriseer(tx.tegenpartij, tx.omschrijving, tx.bedragExclBtw, tx.richting);
+    const cat = await categoriseer(tx.tegenpartij, tx.omschrijving, tx.bedrag, tx.richting);
 
     const categorie = await prisma.categorie.findUnique({
       where: { code: cat.categorieCode },
