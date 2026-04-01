@@ -19,9 +19,26 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
+  // Server-side factuurnummer genereren als het geen creditnota is
+  let nummer = body.nummer;
+  if (!body.creditVanId) {
+    const jaar = new Date(body.datum).getFullYear();
+    const prefix = `${jaar}-`;
+    const bestaande = await prisma.factuur.findMany({
+      where: { nummer: { startsWith: prefix } },
+      select: { nummer: true },
+      orderBy: { nummer: 'desc' },
+    });
+    const hoogste = bestaande.reduce((max, f) => {
+      const n = parseInt(f.nummer.replace(prefix, '')) || 0;
+      return n > max ? n : max;
+    }, 0);
+    nummer = `${prefix}${String(hoogste + 1).padStart(2, '0')}`;
+  }
+
   const factuur = await prisma.factuur.create({
     data: {
-      nummer: body.nummer,
+      nummer,
       datum: new Date(body.datum),
       vervaldatum: new Date(body.vervaldatum),
       relatieId: body.relatieId,
@@ -49,18 +66,28 @@ export async function DELETE(req: NextRequest) {
   const id = parseInt(searchParams.get('id') || '0');
   if (!id) return NextResponse.json({ error: 'ID is verplicht' }, { status: 400 });
 
-  // Audit trail: log factuurdata vóór verwijdering
+  // Check of factuur verwijderd mag worden (alleen openstaande facturen)
   const factuur = await prisma.factuur.findUnique({ where: { id }, include: { regels: true } });
-  if (factuur) {
-    await prisma.wijzigingLog.create({
-      data: {
-        transactieId: 0, // geen transactie, maar factuur
-        veld: 'FACTUUR_VERWIJDERD',
-        oudeWaarde: JSON.stringify(factuur),
-        nieuweWaarde: null,
-      },
-    });
+  if (!factuur) {
+    return NextResponse.json({ error: 'Factuur niet gevonden' }, { status: 404 });
   }
+
+  if (factuur.status !== 'openstaand') {
+    return NextResponse.json(
+      { error: `Factuur ${factuur.nummer} is ${factuur.status} en kan niet verwijderd worden. Maak een creditnota aan.` },
+      { status: 400 }
+    );
+  }
+
+  // Audit trail: log factuurdata vóór verwijdering
+  await prisma.wijzigingLog.create({
+    data: {
+      transactieId: 0,
+      veld: 'FACTUUR_VERWIJDERD',
+      oudeWaarde: JSON.stringify(factuur),
+      nieuweWaarde: null,
+    },
+  });
 
   await prisma.factuur.delete({ where: { id } });
   return NextResponse.json({ success: true });

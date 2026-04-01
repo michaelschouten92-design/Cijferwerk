@@ -31,10 +31,18 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   const bedrijf = await getBedrijfsgegevens();
 
+  // Bij creditnota: origineel factuurnummer ophalen
+  let creditVanNummer: string | null = null;
+  if (factuur.creditVanId) {
+    const origineel = await prisma.factuur.findUnique({ where: { id: factuur.creditVanId } });
+    creditVanNummer = origineel?.nummer ?? null;
+  }
+
   const html = genereerFactuurHTML({
     nummer: factuur.nummer,
     datum: factuur.datum.toLocaleDateString('nl-NL'),
     vervaldatum: factuur.vervaldatum.toLocaleDateString('nl-NL'),
+    creditVanNummer,
     klant: {
       naam: factuur.relatie.naam,
       adres: factuur.relatie.adres || undefined,
