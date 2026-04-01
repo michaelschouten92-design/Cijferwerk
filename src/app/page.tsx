@@ -58,33 +58,18 @@ export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [jaar, setJaar] = useState(new Date().getFullYear());
   const [checked, setChecked] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    let attempts = 0;
-    function checkOnboarding() {
-      attempts++;
-      fetch('/api/settings')
-        .then(r => r.json())
-        .then(s => {
-          if (!s.bedrijfNaam) {
-            router.replace('/onboarding');
-          } else {
-            setChecked(true);
-          }
-        })
-        .catch(() => {
-          // Server nog niet klaar? Probeer opnieuw (max 5x)
-          if (attempts < 5) {
-            setTimeout(checkOnboarding, 1000);
-          } else {
-            // Na 5 pogingen: toon onboarding (veiliger dan dashboard zonder data)
-            router.replace('/onboarding');
-          }
-        });
-    }
-    checkOnboarding();
+    fetch('/api/settings')
+      .then(r => r.json())
+      .then(s => {
+        if (!s.bedrijfNaam) setShowSetup(true);
+        setChecked(true);
+      })
+      .catch(() => setChecked(true));
   }, [router]);
 
   const load = useCallback(() => {
@@ -140,6 +125,22 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-5xl mx-auto">
+      {/* Welkomstbanner als bedrijfsgegevens nog niet ingevuld */}
+      {showSetup && (
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-6 mb-6 animate-fade-in-up">
+          <h2 className="text-lg font-bold text-brand-900 mb-2">Welkom bij Cijferwerk!</h2>
+          <p className="text-sm text-brand-700 mb-4">Vul eerst je bedrijfsgegevens in. Deze verschijnen op je facturen en exports.</p>
+          <div className="flex gap-3">
+            <Link href="/settings" className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors">
+              Bedrijfsgegevens invullen
+            </Link>
+            <Link href="/onboarding" className="px-4 py-2 bg-white text-brand-700 border border-brand-200 rounded-lg text-sm font-medium hover:bg-brand-50 transition-colors">
+              Onboarding starten
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
