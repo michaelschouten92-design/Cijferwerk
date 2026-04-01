@@ -62,13 +62,29 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch('/api/settings').then(r => r.json()).then(s => {
-      if (!s.bedrijfNaam) {
-        router.replace('/onboarding');
-      } else {
-        setChecked(true);
-      }
-    }).catch(() => setChecked(true));
+    let attempts = 0;
+    function checkOnboarding() {
+      attempts++;
+      fetch('/api/settings')
+        .then(r => r.json())
+        .then(s => {
+          if (!s.bedrijfNaam) {
+            router.replace('/onboarding');
+          } else {
+            setChecked(true);
+          }
+        })
+        .catch(() => {
+          // Server nog niet klaar? Probeer opnieuw (max 5x)
+          if (attempts < 5) {
+            setTimeout(checkOnboarding, 1000);
+          } else {
+            // Na 5 pogingen: toon onboarding (veiliger dan dashboard zonder data)
+            router.replace('/onboarding');
+          }
+        });
+    }
+    checkOnboarding();
   }, [router]);
 
   const load = useCallback(() => {
