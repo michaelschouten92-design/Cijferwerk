@@ -53,7 +53,7 @@ export default function OnboardingPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-lg w-full text-center">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <span className="text-white font-bold text-2xl">C</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-3">Welkom bij Cijferwerk</h1>
@@ -65,7 +65,7 @@ export default function OnboardingPage() {
             <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" /> Jaarafsluiting voor je boekhouder</li>
           </ul>
           <button onClick={() => setStap(1)}
-            className="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors">
+            className="inline-flex items-center gap-2 px-8 py-3 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700 transition-colors">
             Aan de slag <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -79,7 +79,7 @@ export default function OnboardingPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-lg w-full">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+            <div className="w-8 h-8 bg-brand-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">Je bedrijfsgegevens</h2>
               <p className="text-sm text-gray-500">Deze verschijnen op je facturen</p>
@@ -144,7 +144,7 @@ export default function OnboardingPage() {
 
           <div className="flex justify-end mt-4">
             <button onClick={saveBedrijf} disabled={!form.bedrijfNaam || saving}
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors">
               {saving ? 'Opslaan...' : 'Volgende'} <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -159,7 +159,7 @@ export default function OnboardingPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-lg w-full">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+            <div className="w-8 h-8 bg-brand-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">Transacties importeren</h2>
               <p className="text-sm text-gray-500">Exporteer een CSV vanuit je bank</p>
@@ -192,7 +192,7 @@ export default function OnboardingPage() {
               Overslaan
             </button>
             <button onClick={() => setStap(3)}
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors">
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700 transition-colors">
               {importResult ? 'Volgende' : 'Overslaan'} <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -222,7 +222,7 @@ export default function OnboardingPage() {
         </div>
 
         <button onClick={finish}
-          className="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors">
+          className="inline-flex items-center gap-2 px-8 py-3 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700 transition-colors">
           Naar het overzicht <ArrowRight className="w-4 h-4" />
         </button>
       </div>

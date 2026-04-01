@@ -2,7 +2,7 @@
 
 import { formatEuro } from '@/lib/format';
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, X } from 'lucide-react';
+import { Plus, Trash2, X, Wallet } from 'lucide-react';
 
 interface KasTransactie {
   id: number;
@@ -30,7 +30,6 @@ export default function KasboekPage() {
   const jaar = new Date().getFullYear();
 
   function load() {
-    // Kasboek transacties hebben status 'Contant'
     fetch(`/api/transactions?jaar=${jaar}`).then(r => r.json()).then((all: any[]) => {
       setTransacties(all.filter(t => t.status === 'Contant'));
     });
@@ -52,28 +51,28 @@ export default function KasboekPage() {
     <div className="max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Kasboek</h2>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Kasboek</h2>
           <p className="text-sm text-gray-500">Contante inkomsten en uitgaven</p>
         </div>
         <button onClick={() => setShowAdd(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+          className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors">
           + Toevoegen
         </button>
       </div>
 
       {/* Samenvatting */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl shadow-card hover:shadow-card-hover transition-shadow p-5">
           <p className="text-sm text-gray-500">Contant ontvangen</p>
-          <p className="text-xl font-bold text-green-600 mt-1">{formatEuro(totaalIn)}</p>
+          <p className="text-xl font-bold text-green-600 mt-1 tabular-nums">{formatEuro(totaalIn)}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl shadow-card hover:shadow-card-hover transition-shadow p-5">
           <p className="text-sm text-gray-500">Contant uitgegeven</p>
-          <p className="text-xl font-bold text-red-600 mt-1">{formatEuro(totaalUit)}</p>
+          <p className="text-xl font-bold text-red-600 mt-1 tabular-nums">{formatEuro(totaalUit)}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl shadow-card hover:shadow-card-hover transition-shadow p-5">
           <p className="text-sm text-gray-500">Kassaldo</p>
-          <p className="text-xl font-bold text-gray-900 mt-1">{formatEuro(totaalIn - totaalUit)}</p>
+          <p className="text-xl font-bold text-gray-900 mt-1 tabular-nums">{formatEuro(totaalIn - totaalUit)}</p>
         </div>
       </div>
 
@@ -86,10 +85,10 @@ export default function KasboekPage() {
       )}
 
       {/* Transacties lijst */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+      <div className="bg-white rounded-xl shadow-card overflow-x-auto">
         <table className="w-full min-w-[500px]">
           <thead>
-            <tr className="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase">
+            <tr className="bg-gray-50 text-left text-xs font-medium text-gray-500">
               <th className="px-4 py-3">Datum</th>
               <th className="px-4 py-3">Omschrijving</th>
               <th className="px-4 py-3">Categorie</th>
@@ -97,17 +96,17 @@ export default function KasboekPage() {
               <th className="px-4 py-3 w-12"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-50">
             {transacties.map(tx => (
-              <tr key={tx.id} className="text-sm hover:bg-gray-50">
-                <td className="px-4 py-3 text-gray-500">{new Date(tx.datum).toLocaleDateString('nl-NL')}</td>
+              <tr key={tx.id} className="text-sm hover:bg-gray-50 transition-colors">
+                <td className="px-4 py-3 text-gray-500 tabular-nums">{new Date(tx.datum).toLocaleDateString('nl-NL')}</td>
                 <td className="px-4 py-3 font-medium text-gray-900">{tx.omschrijving}</td>
                 <td className="px-4 py-3">
                   {tx.categorie ? (
-                    <span className="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">{tx.categorie.naam}</span>
+                    <span className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-600">{tx.categorie.naam}</span>
                   ) : '-'}
                 </td>
-                <td className={`px-4 py-3 text-right font-medium ${tx.richting === 'verkoop' ? 'text-green-600' : 'text-red-600'}`}>
+                <td className={`px-4 py-3 text-right font-medium tabular-nums ${tx.richting === 'verkoop' ? 'text-green-600' : 'text-red-600'}`}>
                   {tx.richting === 'verkoop' ? '+' : '-'}{formatEuro(tx.bedragExclBtw + tx.btwBedrag)}
                 </td>
                 <td className="px-4 py-3">
@@ -117,7 +116,7 @@ export default function KasboekPage() {
                       <button onClick={() => setDeleteId(null)} className="text-xs text-gray-400">Nee</button>
                     </div>
                   ) : (
-                    <button onClick={() => setDeleteId(tx.id)} className="p-1 text-gray-400 hover:text-red-600">
+                    <button onClick={() => setDeleteId(tx.id)} className="p-1 text-gray-400 hover:text-red-600 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}
@@ -125,7 +124,10 @@ export default function KasboekPage() {
               </tr>
             ))}
             {transacties.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Nog geen contante transacties</td></tr>
+              <tr><td colSpan={5} className="px-4 py-12 text-center text-gray-400">
+                <Wallet className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                Nog geen contante transacties. Voeg je eerste toe met de knop hierboven.
+              </td></tr>
             )}
           </tbody>
         </table>
@@ -174,7 +176,7 @@ function AddKasForm({ categorieen, onSave, onCancel }: {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-card p-6 mb-6 animate-fade-in-up">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-gray-900">Contante transactie</h3>
         <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
@@ -231,7 +233,7 @@ function AddKasForm({ categorieen, onSave, onCancel }: {
         </div>
       </div>
       <div className="flex justify-end mt-4">
-        <button type="submit" className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">
+        <button type="submit" className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
           Opslaan
         </button>
       </div>

@@ -41,7 +41,7 @@ export default function ActivaPage() {
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors"
         >
           <Plus className="w-4 h-4" /> Toevoegen
         </button>
@@ -49,11 +49,11 @@ export default function ActivaPage() {
 
       {/* Samenvatting */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl shadow-card p-5">
           <p className="text-sm text-gray-500">Totale boekwaarde</p>
           <p className="text-xl font-bold text-gray-900 mt-1">{formatEuro(totaalBoekwaarde)}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl shadow-card p-5">
           <p className="text-sm text-gray-500">Jaarlijkse afschrijving</p>
           <p className="text-xl font-bold text-red-600 mt-1">{formatEuro(totaalJaarAfschrijving)}</p>
         </div>
@@ -75,7 +75,7 @@ export default function ActivaPage() {
       )}
 
       {/* Activa lijst */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+      <div className="bg-white rounded-xl shadow-card overflow-x-auto">
         <table className="w-full text-sm min-w-[700px]">
           <thead>
             <tr className="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase">

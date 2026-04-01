@@ -43,7 +43,7 @@ export default function CategorieenPage() {
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Categorieën</h2>
 
       {/* Categorieën */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-xl shadow-card p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-semibold text-gray-900">Categorieën</h3>
@@ -99,7 +99,7 @@ export default function CategorieenPage() {
       </div>
 
       {/* Automatisch verwerken */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-card p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-semibold text-gray-900">Automatisch verwerken</h3>

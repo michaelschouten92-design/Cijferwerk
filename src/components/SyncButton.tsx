@@ -49,7 +49,7 @@ export default function SyncButton({ onSync }: { onSync?: () => void }) {
 
   return (
     <div className="relative">
-      <label className={`inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer ${importing ? 'opacity-50 pointer-events-none' : ''}`}>
+      <label className={`inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors cursor-pointer ${importing ? 'opacity-50 pointer-events-none' : ''}`}>
         <Upload className={`w-4 h-4 ${importing ? 'animate-pulse' : ''}`} />
         {importing ? 'Importeren...' : 'Importeer'}
         <input

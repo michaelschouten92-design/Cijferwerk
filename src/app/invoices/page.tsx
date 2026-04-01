@@ -120,7 +120,7 @@ export default function FacturenPage() {
     <div className="max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Facturen</h2>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Facturen</h2>
           {openstaand.length > 0 && (
             <p className="text-sm text-gray-500 mt-1">
               {openstaand.length} openstaand — {formatEuro(totaalOpenstaand)} te ontvangen
@@ -134,11 +134,11 @@ export default function FacturenPage() {
               placeholder="Zoek factuur..." className="pl-9 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm w-44" />
           </div>
           <button onClick={() => setShowSjabloonForm(!showSjabloonForm)}
-            className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50">
+            className="px-4 py-2 bg-white text-gray-700 shadow-card rounded-lg text-sm font-medium hover:shadow-card-hover transition-shadow">
             + Terugkerend
           </button>
           <button onClick={() => setShowForm(!showForm)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+            className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors">
             + Nieuwe factuur
           </button>
         </div>
@@ -169,7 +169,7 @@ export default function FacturenPage() {
                 <div className="flex items-center gap-2">
                   {isKlaar && (
                     <button onClick={() => genereerVanSjabloon(s.id)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors">
                       <RefreshCw className="w-3.5 h-3.5" /> Factuur aanmaken
                     </button>
                   )}
@@ -190,7 +190,7 @@ export default function FacturenPage() {
             {openstaand.map(f => {
               const over = dagenOver(f);
               return (
-                <div key={f.id} className={`bg-white rounded-xl border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${over > 0 ? 'border-red-200' : 'border-gray-200'}`}>
+                <div key={f.id} className={`bg-white rounded-xl shadow-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${over > 0 ? 'border-l-4 border-red-400' : ''}`}>
                   <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                     <div>
                       <span className="font-medium text-gray-900">{f.nummer}</span>
@@ -248,10 +248,11 @@ export default function FacturenPage() {
       )}
 
       {openstaand.length === 0 && betaald.length === 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded-xl shadow-card p-12 text-center">
+          <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-400">Nog geen facturen aangemaakt</p>
           <button onClick={() => setShowForm(true)}
-            className="mt-3 text-sm text-blue-600 hover:text-blue-800">Maak je eerste factuur</button>
+            className="mt-3 text-sm text-brand-600 hover:text-brand-800 font-medium">Maak je eerste factuur</button>
         </div>
       )}
 
@@ -266,10 +267,10 @@ export default function FacturenPage() {
       {betaald.length > 0 && (
         <div>
           <h3 className="text-sm font-medium text-gray-500 uppercase mb-3">Betaald</h3>
-          <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+          <div className="bg-white rounded-xl shadow-card overflow-x-auto opacity-75">
             <table className="w-full min-w-[500px]">
               <thead>
-                <tr className="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase">
+                <tr className="bg-gray-50 text-left text-xs font-medium text-gray-500">
                   <th className="px-4 py-3">Nummer</th>
                   <th className="px-4 py-3">Datum</th>
                   <th className="px-4 py-3">Klant</th>
@@ -277,7 +278,7 @@ export default function FacturenPage() {
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-50">
                 {betaald.map(f => (
                   <tr key={f.id} className="text-sm text-gray-500">
                     <td className="px-4 py-3">{f.nummer}</td>
@@ -306,8 +307,8 @@ export default function FacturenPage() {
       {sendModal && <SendInvoiceModal factuur={sendModal} onClose={() => setSendModal(null)} />}
       {markeerModal && <MarkeerBetaaldModal factuur={markeerModal} onClose={() => setMarkeerModal(null)} onSave={load} />}
       {deleteModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setDeleteModal(null)}>
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 p-6" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setDeleteModal(null)}>
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 p-6 animate-fade-in-up" onClick={e => e.stopPropagation()}>
             <h3 className="font-semibold text-gray-900 mb-3">Factuur {deleteModal.nummer} verwijderen?</h3>
             <p className="text-sm text-gray-500 mb-4">
               Dit verwijdert de factuur permanent. Overweeg een creditnota als de factuur al verstuurd is.
@@ -342,8 +343,8 @@ function MarkeerBetaaldModal({ factuur, onClose, onSave }: { factuur: Factuur; o
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 p-6" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 p-6 animate-fade-in-up" onClick={e => e.stopPropagation()}>
         <h3 className="font-semibold text-gray-900 mb-3">Factuur {factuur.nummer} als betaald markeren?</h3>
         <p className="text-sm text-gray-500 mb-4">
           {factuur.relatie.naam} — {formatEuro(totaal(factuur))}
@@ -385,8 +386,8 @@ function SendInvoiceModal({ factuur, onClose }: { factuur: Factuur; onClose: () 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 animate-fade-in-up" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-gray-900">Factuur {factuur.nummer} verzenden</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
@@ -473,7 +474,7 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-card p-6 mb-6 animate-fade-in-up">
       <h3 className="font-semibold mb-4">Nieuwe factuur</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <div>
@@ -578,7 +579,7 @@ function SjabloonForm({ onSave, onCancel }: { onSave: () => void; onCancel: () =
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-5 mb-3">
+    <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-card p-5 mb-3 animate-fade-in-up">
       <h4 className="font-semibold text-gray-900 mb-3">Nieuw sjabloon</h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
         <div>
@@ -634,7 +635,7 @@ function SjabloonForm({ onSave, onCancel }: { onSave: () => void; onCancel: () =
 
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onCancel} className="px-4 py-1.5 text-sm text-gray-600">Annuleer</button>
-        <button type="submit" className="px-5 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Opslaan</button>
+        <button type="submit" className="px-5 py-1.5 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors">Opslaan</button>
       </div>
     </form>
   );
@@ -671,8 +672,8 @@ function KoppelModal({ factuur, onClose, onSave }: { factuur: Factuur; onClose: 
   const factuurTotaal = totaal(factuur);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[80vh] flex flex-col animate-fade-in-up" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-semibold text-gray-900">Koppel betaling aan factuur {factuur.nummer}</h3>

@@ -38,14 +38,22 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div className="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm">
         {messages.map(m => (
           <div key={m.id}
-            className={`flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-sm animate-in ${
-              m.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-sm animate-slide-in-right backdrop-blur-md overflow-hidden relative ${
+              m.type === 'success'
+                ? 'bg-white/90 text-green-800 border border-green-200'
+                : 'bg-white/90 text-red-800 border border-red-200'
             }`}>
-            {m.type === 'success' ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
-            <span className="flex-1">{m.text}</span>
-            <button onClick={() => dismiss(m.id)} className="shrink-0 opacity-70 hover:opacity-100">
+            <div className={`shrink-0 ${m.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>
+              {m.type === 'success' ? <CheckCircle className="w-4.5 h-4.5" /> : <AlertCircle className="w-4.5 h-4.5" />}
+            </div>
+            <span className="flex-1 font-medium">{m.text}</span>
+            <button onClick={() => dismiss(m.id)} className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
               <X className="w-3.5 h-3.5" />
             </button>
+            {/* Countdown balk */}
+            {m.type === 'success' && (
+              <div className={`absolute bottom-0 left-0 h-0.5 bg-green-400 animate-progress-countdown`} />
+            )}
           </div>
         ))}
       </div>

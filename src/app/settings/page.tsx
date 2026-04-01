@@ -33,7 +33,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">Instellingen</h2>
+      <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-4">Instellingen</h2>
 
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mb-6">
@@ -51,7 +51,7 @@ export default function SettingsPage() {
       {activeTab !== 'algemeen' ? null : (<div>
 
       {/* Bank Import instructies */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-xl shadow-card p-6 mb-6">
         <h3 className="font-semibold text-gray-900 mb-4">Transacties importeren</h3>
         <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
           <p className="font-medium mb-2">Hoe werkt het:</p>
@@ -66,7 +66,7 @@ export default function SettingsPage() {
 
       {/* Import Geschiedenis */}
       {syncLogs.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+        <div className="bg-white rounded-xl shadow-card p-6 mb-6">
           <h3 className="font-semibold text-gray-900 mb-4">Import geschiedenis</h3>
           <div className="space-y-2">
             {syncLogs.slice(0, 10).map(log => (
@@ -144,7 +144,7 @@ function BedrijfsSection() {
   if (!loaded) return null;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <div className="bg-white rounded-xl shadow-card p-6 mb-6">
       <h3 className="font-semibold text-gray-900 mb-4">Bedrijfsgegevens & factuurstijl</h3>
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div><label className="block text-xs text-gray-500 mb-1">Bedrijfsnaam</label><input value={form.bedrijfNaam} onChange={e => setForm({ ...form, bedrijfNaam: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" placeholder="Jouw bedrijfsnaam" /></div>
@@ -178,7 +178,7 @@ function BedrijfsSection() {
         </div>
       </div>
       <div className="flex items-center gap-3 mt-4">
-        <button onClick={handleSave} disabled={saving} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"><Save className="w-4 h-4" /> {saving ? 'Opslaan...' : 'Opslaan'}</button>
+        <button onClick={handleSave} disabled={saving} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors disabled:opacity-50"><Save className="w-4 h-4" /> {saving ? 'Opslaan...' : 'Opslaan'}</button>
         {msg && <span className={`text-sm ${msg.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{msg.text}</span>}
       </div>
     </div>
@@ -204,11 +204,11 @@ function BackupSection() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <div className="bg-white rounded-xl shadow-card p-6 mb-6">
       <h3 className="font-semibold text-gray-900 mb-4">Back-up</h3>
       <p className="text-sm text-gray-500 mb-4">Download regelmatig een back-up van je administratie.</p>
       <div className="flex items-center gap-3">
-        <a href="/api/backup" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"><Download className="w-4 h-4" /> Download back-up</a>
+        <a href="/api/backup" className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors"><Download className="w-4 h-4" /> Download back-up</a>
         <label className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 cursor-pointer ${restoring ? 'opacity-50' : ''}`}><Upload className="w-4 h-4" /> Herstel back-up<input type="file" accept=".db,.zip" onChange={handleRestore} className="hidden" disabled={restoring} /></label>
       </div>
       {result && <div className={`mt-3 p-3 rounded-lg text-sm ${result.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{result.text}</div>}
@@ -243,7 +243,7 @@ function SmtpSection() {
   if (!loaded) return null;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <div className="bg-white rounded-xl shadow-card p-6 mb-6">
       <h3 className="font-semibold text-gray-900 mb-4">E-mail (SMTP)</h3>
       <p className="text-sm text-gray-500 mb-3">Configureer SMTP om facturen direct per e-mail te verzenden.</p>
       <div className="mb-3">
@@ -270,7 +270,7 @@ function SmtpSection() {
         <div><label className="block text-xs text-gray-500 mb-1">Wachtwoord</label><input type="password" value={form.smtpPass} onChange={e => setForm({ ...form, smtpPass: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" placeholder="App-wachtwoord" /></div>
         <div className="col-span-2"><label className="block text-xs text-gray-500 mb-1">Afzender</label><input value={form.smtpFrom} onChange={e => setForm({ ...form, smtpFrom: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" placeholder="Algo Studio <email@domain.nl>" /></div>
       </div>
-      <button onClick={handleSave} disabled={saving} className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"><Save className="w-4 h-4" /> {saving ? 'Opslaan...' : 'Opslaan'}</button>
+      <button onClick={handleSave} disabled={saving} className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors disabled:opacity-50"><Save className="w-4 h-4" /> {saving ? 'Opslaan...' : 'Opslaan'}</button>
       {msg && <div className={`mt-3 p-3 rounded-lg text-sm ${msg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{msg.text}</div>}
     </div>
   );

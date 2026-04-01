@@ -1,9 +1,9 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import MobileNav from '@/components/MobileNav';
 import NavLink from '@/components/NavLink';
 import Providers from '@/components/Providers';
+import { LayoutDashboard, ArrowLeftRight, FileText, BookOpen, Percent, Users, Settings } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Cijferwerk',
@@ -11,13 +11,13 @@ export const metadata: Metadata = {
 };
 
 const navItems = [
-  { href: '/', label: 'Overzicht' },
-  { href: '/transactions', label: 'Transacties' },
-  { href: '/invoices', label: 'Facturen' },
-  { href: '/kasboek', label: 'Kasboek' },
-  { href: '/btw', label: 'BTW' },
-  { href: '/relaties', label: 'Klanten' },
-  { href: '/settings', label: 'Instellingen' },
+  { href: '/', label: 'Overzicht', icon: <LayoutDashboard className="w-5 h-5" /> },
+  { href: '/transactions', label: 'Transacties', icon: <ArrowLeftRight className="w-5 h-5" /> },
+  { href: '/invoices', label: 'Facturen', icon: <FileText className="w-5 h-5" /> },
+  { href: '/kasboek', label: 'Kasboek', icon: <BookOpen className="w-5 h-5" /> },
+  { href: '/btw', label: 'BTW', icon: <Percent className="w-5 h-5" /> },
+  { href: '/relaties', label: 'Klanten', icon: <Users className="w-5 h-5" /> },
+  { href: '/settings', label: 'Instellingen', icon: <Settings className="w-5 h-5" /> },
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="nl">
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#2563eb" />
+        <meta name="theme-color" content="#4f46e5" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Cijferwerk" />
@@ -41,13 +41,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
         <div className="min-h-screen flex">
           {/* Desktop sidebar */}
-          <aside className="hidden lg:flex w-56 bg-white border-r border-gray-200 flex-col">
+          <aside className="hidden lg:flex w-56 bg-[#fbfbf9] border-r border-gray-100 flex-col">
             <div className="p-5 border-b border-gray-100">
-              <h1 className="text-lg font-bold text-gray-900">{process.env.COMPANY_NAME || 'Cijferwerk'}</h1>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">C</span>
+                </div>
+                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Cijferwerk</h1>
+              </div>
             </div>
             <nav className="flex-1 p-3 space-y-0.5">
               {navItems.map(item => (
-                <NavLink key={item.href} href={item.href} label={item.label} />
+                <NavLink key={item.href} href={item.href} label={item.label} icon={item.icon} />
               ))}
             </nav>
           </aside>
@@ -55,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Mobile nav */}
           <MobileNav />
 
-          <main className="flex-1 p-4 pt-16 lg:p-8 lg:pt-8 overflow-auto bg-gray-50">
+          <main className="flex-1 p-4 pt-16 lg:p-8 lg:pt-8 overflow-auto">
             {children}
           </main>
         </div>
