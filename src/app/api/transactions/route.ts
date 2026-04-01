@@ -39,15 +39,20 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
+  // BTW altijd server-side berekenen, nooit client-waarde vertrouwen
+  const bedragExclBtw = Math.abs(body.bedragExclBtw);
+  const btwPercentage = body.btwPercentage ?? 0.21;
+  const btwBedrag = Math.round(bedragExclBtw * btwPercentage * 100) / 100;
+
   const transactie = await prisma.transactie.create({
     data: {
       datum: new Date(body.datum),
       soort: body.soort || 'Overig',
       factuurnummer: body.factuurnummer,
       omschrijving: body.omschrijving,
-      bedragExclBtw: Math.abs(body.bedragExclBtw),
-      btwPercentage: body.btwPercentage ?? 0.21,
-      btwBedrag: Math.abs(body.btwBedrag ?? 0),
+      bedragExclBtw,
+      btwPercentage,
+      btwBedrag,
       status: body.status || 'Betaald via Bank',
       richting: body.richting,
       gecategoriseerd: true,
@@ -71,6 +76,12 @@ export async function PUT(req: NextRequest) {
   const huidig = await prisma.transactie.findUnique({ where: { id } });
 
   if (data.datum) data.datum = new Date(data.datum);
+
+  // BTW server-side herberekenen als percentage wijzigt
+  if (data.btwPercentage !== undefined && huidig) {
+    const bedrag = data.bedragExclBtw ?? huidig.bedragExclBtw;
+    data.btwBedrag = Math.round(bedrag * data.btwPercentage * 100) / 100;
+  }
 
   const transactie = await prisma.transactie.update({
     where: { id },

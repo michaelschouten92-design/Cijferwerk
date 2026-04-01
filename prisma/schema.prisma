@@ -98,6 +98,7 @@ model Factuur {
   relatieId       Int
   relatie         Relatie   @relation(fields: [relatieId], references: [id])
   status          String    @default("openstaand") // openstaand | betaald
+  creditVanId     Int?      // verwijst naar de originele factuur bij creditnota's
   createdAt       DateTime  @default(now())
   regels          FactuurRegel[]
   transacties     Transactie[]

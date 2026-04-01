@@ -73,6 +73,12 @@ export default function FacturenPage() {
   }
 
   async function handleCreditnota(f: Factuur) {
+    // Check of er al een creditnota bestaat
+    const bestaandeCreditnota = facturen.find(fac => fac.nummer === `C-${f.nummer}`);
+    if (bestaandeCreditnota) {
+      alert(`Er bestaat al een creditnota voor factuur ${f.nummer} (${bestaandeCreditnota.nummer}).`);
+      return;
+    }
     if (!confirm(`Creditnota aanmaken voor factuur ${f.nummer}?\n\nDit maakt een nieuwe factuur aan met negatieve bedragen.`)) return;
     const creditNummer = `C-${f.nummer}`;
     await fetch('/api/invoices', {
@@ -83,6 +89,7 @@ export default function FacturenPage() {
         datum: new Date().toISOString().split('T')[0],
         vervaldatum: new Date().toISOString().split('T')[0],
         relatieId: f.relatie.id,
+        creditVanId: f.id,
         regels: f.regels.map(r => ({
           aantal: r.aantal,
           beschrijving: `CREDIT: ${r.beschrijving}`,
