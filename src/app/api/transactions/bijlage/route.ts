@@ -14,7 +14,9 @@ export async function GET(req: NextRequest) {
   const tx = await prisma.transactie.findUnique({ where: { id } });
   if (!tx?.bijlagePad) return NextResponse.json({ error: 'Geen bijlage' }, { status: 404 });
 
-  const filePath = path.resolve(UPLOADS_DIR, tx.bijlagePad);
+  const safeName = path.basename(tx.bijlagePad);
+  const filePath = path.resolve(UPLOADS_DIR, safeName);
+  if (!filePath.startsWith(path.resolve(UPLOADS_DIR))) return NextResponse.json({ error: 'Ongeldig pad' }, { status: 400 });
   if (!fs.existsSync(filePath)) return NextResponse.json({ error: 'Bestand niet gevonden' }, { status: 404 });
 
   const buffer = fs.readFileSync(filePath);
@@ -64,8 +66,8 @@ export async function POST(req: NextRequest) {
   // Oude bijlage verwijderen als die er was
   const bestaande = await prisma.transactie.findUnique({ where: { id: transactieId } });
   if (bestaande?.bijlagePad) {
-    const oudPad = path.resolve(UPLOADS_DIR, bestaande.bijlagePad);
-    if (fs.existsSync(oudPad)) fs.unlinkSync(oudPad);
+    const oudPad = path.resolve(UPLOADS_DIR, path.basename(bestaande.bijlagePad));
+    if (oudPad.startsWith(path.resolve(UPLOADS_DIR)) && fs.existsSync(oudPad)) fs.unlinkSync(oudPad);
   }
 
   // Database updaten
@@ -86,8 +88,8 @@ export async function DELETE(req: NextRequest) {
 
   const tx = await prisma.transactie.findUnique({ where: { id } });
   if (tx?.bijlagePad) {
-    const filePath = path.resolve(UPLOADS_DIR, tx.bijlagePad);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    const filePath = path.resolve(UPLOADS_DIR, path.basename(tx.bijlagePad));
+    if (filePath.startsWith(path.resolve(UPLOADS_DIR)) && fs.existsSync(filePath)) fs.unlinkSync(filePath);
   }
 
   await prisma.transactie.update({

@@ -27,19 +27,26 @@ export function berekenAfschrijvingen(activa: VastActief[], jaar: number): numbe
     // Nog niet aangeschaft dit jaar
     if (aanschaf > jaareinde) return s;
 
-    // Pro-rata: maanden in gebruik dit jaar (maand van aanschaf telt mee)
-    const maandenInGebruik = Math.min(12,
+    // Totaal maanden sinds aanschaf (maand van aanschaf telt mee)
+    const totaalMaanden =
       (jaareinde.getFullYear() - aanschaf.getFullYear()) * 12 +
-      (jaareinde.getMonth() - aanschaf.getMonth()) + 1
+      (jaareinde.getMonth() - aanschaf.getMonth()) + 1;
+
+    // Check of asset al volledig is afgeschreven (op maandbasis)
+    const maandAfschr = jaarAfschr / 12;
+    const maandenVoorVolledig = Math.ceil(afschrijfbaar / maandAfschr);
+    if (totaalMaanden - 12 >= maandenVoorVolledig) return s; // vorig jaar al klaar
+
+    // Pro-rata: maanden in gebruik dit jaar
+    const maandenInGebruik = Math.min(12, totaalMaanden);
+    // Beperk tot resterende afschrijving
+    const reedAfgeschreven = Math.max(0, totaalMaanden - maandenInGebruik) * maandAfschr;
+    const proRata = Math.min(
+      maandenInGebruik >= 12 ? jaarAfschr : maandAfschr * maandenInGebruik,
+      afschrijfbaar - reedAfgeschreven
     );
-    const proRata = maandenInGebruik >= 12 ? jaarAfschr : jaarAfschr * maandenInGebruik / 12;
 
-    // Check of asset al volledig is afgeschreven
-    const jarenSindsAanschaf = (jaareinde.getFullYear() - aanschaf.getFullYear());
-    const totaalAfgeschreven = jaarAfschr * jarenSindsAanschaf;
-    if (totaalAfgeschreven >= afschrijfbaar) return s;
-
-    return s + proRata;
+    return s + Math.max(0, proRata);
   }, 0);
 
   return round2(totaal);

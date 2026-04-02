@@ -258,13 +258,22 @@ function parseAmount(str: string | undefined): number {
 
 function parseDate(dateStr: string): Date {
   if (!dateStr) throw new Error('Transactie heeft geen datum');
+  let date: Date | null = null;
   const iso = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (iso) return new Date(parseInt(iso[1]), parseInt(iso[2]) - 1, parseInt(iso[3]));
-  const compact = dateStr.match(/^(\d{4})(\d{2})(\d{2})$/);
-  if (compact) return new Date(parseInt(compact[1]), parseInt(compact[2]) - 1, parseInt(compact[3]));
-  const eu = dateStr.match(/^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})/);
-  if (eu) return new Date(parseInt(eu[3]), parseInt(eu[2]) - 1, parseInt(eu[1]));
-  return new Date(dateStr);
+  if (iso) date = new Date(parseInt(iso[1]), parseInt(iso[2]) - 1, parseInt(iso[3]));
+  if (!date) {
+    const compact = dateStr.match(/^(\d{4})(\d{2})(\d{2})$/);
+    if (compact) date = new Date(parseInt(compact[1]), parseInt(compact[2]) - 1, parseInt(compact[3]));
+  }
+  if (!date) {
+    const eu = dateStr.match(/^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})/);
+    if (eu) date = new Date(parseInt(eu[3]), parseInt(eu[2]) - 1, parseInt(eu[1]));
+  }
+  if (!date) date = new Date(dateStr);
+  if (!date || isNaN(date.getTime())) {
+    throw new Error(`Ongeldige datum: "${dateStr}"`);
+  }
+  return date;
 }
 
 export type { ParsedTransaction };

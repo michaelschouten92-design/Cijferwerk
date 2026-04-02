@@ -19,6 +19,18 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
+  // Validatie
+  if (!body.datum || !body.vervaldatum || !body.relatieId) {
+    return NextResponse.json({ error: 'Datum, vervaldatum en klant zijn verplicht' }, { status: 400 });
+  }
+  if (!Array.isArray(body.regels) || body.regels.length === 0) {
+    return NextResponse.json({ error: 'Minimaal één factuurregel is verplicht' }, { status: 400 });
+  }
+  const geldigeRegels = body.regels.filter((r: any) => r.beschrijving?.trim() && r.stuksprijs > 0);
+  if (geldigeRegels.length === 0) {
+    return NextResponse.json({ error: 'Minimaal één regel met omschrijving en prijs > 0' }, { status: 400 });
+  }
+
   // Server-side factuurnummer genereren als het geen creditnota is
   let nummer = body.nummer;
   if (!body.creditVanId) {
@@ -44,10 +56,10 @@ export async function POST(req: NextRequest) {
       relatieId: body.relatieId,
       creditVanId: body.creditVanId ?? null,
       regels: {
-        create: body.regels.map((r: any) => ({
-          aantal: r.aantal,
-          beschrijving: r.beschrijving,
-          stuksprijs: r.stuksprijs,
+        create: geldigeRegels.map((r: any) => ({
+          aantal: Math.max(1, r.aantal || 1),
+          beschrijving: r.beschrijving.trim(),
+          stuksprijs: Math.abs(r.stuksprijs),
           btwPercentage: r.btwPercentage ?? 0.21,
         })),
       },

@@ -55,7 +55,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     kleur: settings.factuurKleur,
   });
 
-  const totaal = factuur.regels.reduce((s, r) => s + r.aantal * r.stuksprijs * (1 + r.btwPercentage), 0);
+  const totaal = factuur.regels.reduce((s, r) => {
+    const regelExcl = Math.round(r.aantal * r.stuksprijs * 100) / 100;
+    const regelBtw = Math.round(regelExcl * r.btwPercentage * 100) / 100;
+    return s + regelExcl + regelBtw;
+  }, 0);
 
   try {
     const transporter = nodemailer.createTransport({
@@ -75,6 +79,16 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     return NextResponse.json({ success: true, message: `Factuur verzonden naar ${to}` });
   } catch (error: any) {
-    return NextResponse.json({ error: `Verzenden mislukt: ${error.message}` }, { status: 500 });
+    const msg = error.message || 'Onbekende fout';
+    let hint = '';
+    if (msg.includes('ECONNREFUSED') || msg.includes('ETIMEDOUT')) {
+      hint = ' Controleer de SMTP host en poort in Instellingen.';
+    } else if (msg.includes('auth') || msg.includes('credentials') || msg.includes('535')) {
+      hint = ' Controleer je SMTP gebruikersnaam en wachtwoord in Instellingen.';
+    } else if (msg.includes('ENOTFOUND')) {
+      hint = ' De SMTP server is niet bereikbaar. Controleer de hostnaam.';
+    }
+    console.error(`Email verzenden mislukt voor factuur ${id}:`, msg);
+    return NextResponse.json({ error: `Verzenden mislukt: ${msg}${hint}` }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { formatEuro } from '@/lib/format';
+import { useEscapeKey } from '@/lib/useUnsavedWarning';
 import { useEffect, useState } from 'react';
 import SyncButton from '@/components/SyncButton';
 import { useToast } from '@/components/Toast';
@@ -326,6 +327,7 @@ function EditTransactionModal({ tx, categorieen, relaties, onClose, onSave, onDe
   tx: Transactie; categorieen: Categorie[]; relaties: Relatie[];
   onClose: () => void; onSave: () => void; onDelete: () => void;
 }) {
+  useEscapeKey(onClose);
   const [form, setForm] = useState({
     omschrijving: tx.omschrijving,
     btwPercentage: tx.btwPercentage.toString(),

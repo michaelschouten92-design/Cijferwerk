@@ -4,6 +4,7 @@ import * as path from 'path';
 import archiver from 'archiver';
 import { PassThrough } from 'stream';
 import { DB_PATH, UPLOADS_DIR } from '@/lib/paths';
+import { prisma } from '@/lib/db';
 
 /**
  * GET /api/backup — Download volledige back-up (database + bijlagen) als ZIP
@@ -67,39 +68,61 @@ export async function POST(req: NextRequest) {
     const backupPath = DB_PATH + '.bak';
     fs.copyFileSync(DB_PATH, backupPath);
 
+    // Valideer en extract database data uit bestand
+    let dbData: Buffer | null = null;
+    const uploadFiles: { name: string; data: Buffer }[] = [];
+
     if (fileName.endsWith('.db')) {
-      // Oud formaat: los .db bestand
       const header = buffer.toString('ascii', 0, 15);
       if (header !== 'SQLite format 3') {
         return NextResponse.json({ error: 'Ongeldig bestand — dit is geen SQLite database' }, { status: 400 });
       }
-      fs.writeFileSync(DB_PATH, buffer);
-      return NextResponse.json({ success: true, message: 'Database hersteld. Herlaad de pagina.' });
-    }
-
-    if (fileName.endsWith('.zip')) {
-      // Nieuw formaat: ZIP met database + uploads
+      dbData = buffer;
+    } else if (fileName.endsWith('.zip')) {
       const AdmZip = (await import('adm-zip')).default;
       const zip = new AdmZip(buffer);
-      const entries = zip.getEntries();
-
-      for (const entry of entries) {
+      for (const entry of zip.getEntries()) {
         if (entry.entryName === 'dev.db') {
-          const dbData = entry.getData();
-          const header = dbData.toString('ascii', 0, 15);
+          const data = entry.getData();
+          const header = data.toString('ascii', 0, 15);
           if (header !== 'SQLite format 3') {
             return NextResponse.json({ error: 'ZIP bevat geen geldige database' }, { status: 400 });
           }
-          fs.writeFileSync(DB_PATH, dbData);
+          dbData = data;
         } else if (entry.entryName.startsWith('uploads/') && !entry.isDirectory) {
-          if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-          const targetPath = path.join(UPLOADS_DIR, path.basename(entry.entryName));
-          fs.writeFileSync(targetPath, entry.getData());
+          const safeName = path.basename(entry.entryName);
+          if (safeName) uploadFiles.push({ name: safeName, data: entry.getData() });
         }
       }
-
-      return NextResponse.json({ success: true, message: 'Database en bijlagen hersteld. Herlaad de pagina.' });
+    } else {
+      return NextResponse.json({ error: 'Upload een .zip of .db bestand' }, { status: 400 });
     }
+
+    if (!dbData) {
+      return NextResponse.json({ error: 'Geen database gevonden in het bestand' }, { status: 400 });
+    }
+
+    // Schrijf naar temp-bestand, valideer, dan swap
+    const tempPath = DB_PATH + '.restore-temp';
+    try {
+      await prisma.$disconnect();
+      fs.writeFileSync(tempPath, dbData);
+      fs.renameSync(DB_PATH, DB_PATH + '.bak');
+      fs.renameSync(tempPath, DB_PATH);
+    } catch (restoreErr) {
+      // Herstel de backup als de swap mislukt
+      if (fs.existsSync(backupPath)) fs.copyFileSync(backupPath, DB_PATH);
+      if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+      throw restoreErr;
+    }
+
+    // Upload-bestanden herstellen
+    for (const f of uploadFiles) {
+      if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+      fs.writeFileSync(path.join(UPLOADS_DIR, f.name), f.data);
+    }
+
+    return NextResponse.json({ success: true, message: 'Database hersteld. Herlaad de pagina.' });
 
     return NextResponse.json({ error: 'Upload een .zip of .db bestand' }, { status: 400 });
   } catch (error: any) {

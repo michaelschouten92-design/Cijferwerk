@@ -112,17 +112,20 @@ export async function categoriseer(
  * Categoriseer en sla een batch transacties op
  */
 export async function categoriseerEnSlaOp(transacties: ParsedTransaction[]) {
-  // Stap 1: Bereid alle data voor (categoriseer + deduplicatie check)
+  // Stap 1: Bulk deduplicatie check (efficiënt, één query)
+  const txIds = transacties.map(tx => tx.revolutTransId).filter(Boolean) as string[];
+  const bestaande = txIds.length > 0
+    ? new Set((await prisma.transactie.findMany({
+        where: { revolutTransId: { in: txIds } },
+        select: { revolutTransId: true },
+      })).map(t => t.revolutTransId))
+    : new Set<string>();
+
+  // Stap 2: Bereid alle data voor (categoriseer, sla duplicaten over)
   const creates: any[] = [];
 
   for (const tx of transacties) {
-    // Deduplicatie check
-    if (tx.revolutTransId) {
-      const existing = await prisma.transactie.findUnique({
-        where: { revolutTransId: tx.revolutTransId },
-      });
-      if (existing) continue;
-    }
+    if (tx.revolutTransId && bestaande.has(tx.revolutTransId)) continue;
 
     const cat = await categoriseer(tx.tegenpartij, tx.omschrijving, tx.bedrag, tx.richting);
     const categorie = await prisma.categorie.findUnique({ where: { code: cat.categorieCode } });
@@ -146,16 +149,19 @@ export async function categoriseerEnSlaOp(transacties: ParsedTransaction[]) {
     });
   }
 
-  // Stap 2: Alles in één database-transactie schrijven (atomair)
-  const resultaten = await prisma.$transaction(
-    creates.map(c => prisma.transactie.create({ data: c.data }))
-  );
+  // Stap 3: Schrijf per transactie, vang unique constraint violations op
+  const resultaten: any[] = [];
+  for (const c of creates) {
+    try {
+      const saved = await prisma.transactie.create({ data: c.data });
+      resultaten.push({ ...saved, categorieNaam: c.meta.categorieNaam, relatieNaam: c.meta.relatieNaam });
+    } catch (e: any) {
+      if (e.code === 'P2002') continue; // Unique constraint: duplicaat, overslaan
+      throw e;
+    }
+  }
 
-  return resultaten.map((saved, i) => ({
-    ...saved,
-    categorieNaam: creates[i].meta.categorieNaam,
-    relatieNaam: creates[i].meta.relatieNaam,
-  }));
+  return resultaten;
 }
 
 function round2(n: number): number {

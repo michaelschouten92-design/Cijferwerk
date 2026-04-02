@@ -19,8 +19,9 @@ export async function GET(req: NextRequest) {
   });
   const debiteuren = openstaand.reduce((sum, f) => {
     const factuurTotaal = f.regels.reduce((s, r) => {
-      const regelTotaal = r.aantal * r.stuksprijs;
-      return s + regelTotaal + regelTotaal * r.btwPercentage;
+      const regelExcl = Math.round(r.aantal * r.stuksprijs * 100) / 100;
+      const regelBtw = Math.round(regelExcl * r.btwPercentage * 100) / 100;
+      return s + regelExcl + regelBtw;
     }, 0);
     return sum + factuurTotaal;
   }, 0);

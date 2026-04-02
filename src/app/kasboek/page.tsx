@@ -208,7 +208,7 @@ function AddKasForm({ categorieen, onSave, onCancel }: {
         <div>
           <label className="block text-sm text-gray-600 mb-1">Bedrag</label>
           <div className="flex gap-2">
-            <input type="number" step="0.01" value={form.bedrag} onChange={e => setForm({ ...form, bedrag: e.target.value })}
+            <input type="number" step="0.01" min="0.01" value={form.bedrag} onChange={e => setForm({ ...form, bedrag: e.target.value })}
               className="flex-1 px-3 py-2 border rounded-lg text-sm" placeholder="0,00" required />
             <select value={form.inclBtw ? 'incl' : 'excl'} onChange={e => setForm({ ...form, inclBtw: e.target.value === 'incl' })}
               className="px-2 py-2 border rounded-lg text-xs text-gray-600">

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Download, Upload, Save } from 'lucide-react';
+import { useUnsavedWarning } from '@/lib/useUnsavedWarning';
 import dynamic from 'next/dynamic';
 
 const CategorieenContent = dynamic(() => import('@/app/categorieen/page'), { ssr: false });
@@ -110,6 +111,8 @@ function BedrijfsSection() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  useUnsavedWarning(dirty);
 
   useEffect(() => {
     fetch('/api/settings').then(r => r.json()).then(data => {
@@ -124,11 +127,16 @@ function BedrijfsSection() {
     }).catch(() => setLoaded(true));
   }, []);
 
+  function updateForm(updates: Partial<typeof form>) {
+    setForm(f => ({ ...f, ...updates }));
+    setDirty(true);
+  }
+
   function handleLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => setForm({ ...form, factuurLogo: reader.result as string });
+    reader.onload = () => updateForm({ factuurLogo: reader.result as string });
     reader.readAsDataURL(file);
   }
 
@@ -136,7 +144,7 @@ function BedrijfsSection() {
     setSaving(true); setMsg(null);
     try {
       await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
-      setMsg({ type: 'success', text: 'Opgeslagen!' }); setTimeout(() => setMsg(null), 3000);
+      setMsg({ type: 'success', text: 'Opgeslagen!' }); setDirty(false); setTimeout(() => setMsg(null), 3000);
     } catch (e: any) { setMsg({ type: 'error', text: e.message }); }
     setSaving(false);
   }
@@ -147,15 +155,15 @@ function BedrijfsSection() {
     <div className="bg-white rounded-xl shadow-card p-6 mb-6">
       <h3 className="font-semibold text-gray-900 mb-4">Bedrijfsgegevens & factuurstijl</h3>
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <div><label className="block text-xs text-gray-500 mb-1">Bedrijfsnaam</label><input value={form.bedrijfNaam} onChange={e => setForm({ ...form, bedrijfNaam: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" placeholder="Jouw bedrijfsnaam" /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">Contactpersoon</label><input value={form.bedrijfContact} onChange={e => setForm({ ...form, bedrijfContact: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">Adres</label><input value={form.bedrijfAdres} onChange={e => setForm({ ...form, bedrijfAdres: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">Postcode + plaats</label><input value={form.bedrijfPostcode} onChange={e => setForm({ ...form, bedrijfPostcode: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">Telefoon</label><input value={form.bedrijfTelefoon} onChange={e => setForm({ ...form, bedrijfTelefoon: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">E-mail</label><input value={form.bedrijfEmail} onChange={e => setForm({ ...form, bedrijfEmail: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">KVK-nummer</label><input value={form.bedrijfKvk} onChange={e => setForm({ ...form, bedrijfKvk: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">BTW-nummer</label><input value={form.bedrijfBtw} onChange={e => setForm({ ...form, bedrijfBtw: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
-        <div className="col-span-2"><label className="block text-xs text-gray-500 mb-1">IBAN</label><input value={form.bedrijfIban} onChange={e => setForm({ ...form, bedrijfIban: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
+        <div><label className="block text-xs text-gray-500 mb-1">Bedrijfsnaam</label><input value={form.bedrijfNaam} onChange={e => updateForm({ bedrijfNaam: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" placeholder="Jouw bedrijfsnaam" /></div>
+        <div><label className="block text-xs text-gray-500 mb-1">Contactpersoon</label><input value={form.bedrijfContact} onChange={e => updateForm({ bedrijfContact: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
+        <div><label className="block text-xs text-gray-500 mb-1">Adres</label><input value={form.bedrijfAdres} onChange={e => updateForm({ bedrijfAdres: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
+        <div><label className="block text-xs text-gray-500 mb-1">Postcode + plaats</label><input value={form.bedrijfPostcode} onChange={e => updateForm({ bedrijfPostcode: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
+        <div><label className="block text-xs text-gray-500 mb-1">Telefoon</label><input value={form.bedrijfTelefoon} onChange={e => updateForm({ bedrijfTelefoon: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
+        <div><label className="block text-xs text-gray-500 mb-1">E-mail</label><input value={form.bedrijfEmail} onChange={e => updateForm({ bedrijfEmail: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
+        <div><label className="block text-xs text-gray-500 mb-1">KVK-nummer</label><input value={form.bedrijfKvk} onChange={e => updateForm({ bedrijfKvk: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
+        <div><label className="block text-xs text-gray-500 mb-1">BTW-nummer</label><input value={form.bedrijfBtw} onChange={e => updateForm({ bedrijfBtw: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
+        <div className="col-span-2"><label className="block text-xs text-gray-500 mb-1">IBAN</label><input value={form.bedrijfIban} onChange={e => updateForm({ bedrijfIban: e.target.value })} className="w-full px-3 py-1.5 border rounded text-sm" /></div>
       </div>
       <div className="border-t border-gray-100 pt-4 mt-4">
         <h4 className="text-sm font-medium text-gray-700 mb-3">Factuurstijl</h4>
@@ -165,14 +173,14 @@ function BedrijfsSection() {
             <div className="flex items-center gap-3">
               {form.factuurLogo && <div className="border rounded-lg p-2 bg-gray-50"><img src={form.factuurLogo} alt="Logo" className="h-10 max-w-[120px] object-contain" /></div>}
               <label className="cursor-pointer px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200">{form.factuurLogo ? 'Wijzigen' : 'Upload logo'}<input type="file" accept="image/*" onChange={handleLogo} className="hidden" /></label>
-              {form.factuurLogo && <button onClick={() => setForm({ ...form, factuurLogo: null })} className="text-xs text-red-500 hover:text-red-700">Verwijderen</button>}
+              {form.factuurLogo && <button onClick={() => updateForm({ factuurLogo: null })} className="text-xs text-red-500 hover:text-red-700">Verwijderen</button>}
             </div>
             {form.factuurLogo && (
               <div className="mt-3">
                 <label className="block text-xs text-gray-500 mb-1">Logogrootte</label>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-400">Klein</span>
-                  <input type="range" min={20} max={120} step={5} value={form.factuurLogoGrootte} onChange={e => setForm({ ...form, factuurLogoGrootte: parseInt(e.target.value) })} className="flex-1 accent-brand-600" />
+                  <input type="range" min={20} max={120} step={5} value={form.factuurLogoGrootte} onChange={e => updateForm({ factuurLogoGrootte: parseInt(e.target.value) })} className="flex-1 accent-brand-600" />
                   <span className="text-xs text-gray-400">Groot</span>
                 </div>
               </div>
@@ -194,8 +202,8 @@ function BedrijfsSection() {
           <div>
             <label className="block text-xs text-gray-500 mb-1">Accentkleur</label>
             <div className="flex items-center gap-2">
-              <input type="color" value={form.factuurKleur} onChange={e => setForm({ ...form, factuurKleur: e.target.value })} className="w-10 h-8 border rounded cursor-pointer" />
-              <input value={form.factuurKleur} onChange={e => setForm({ ...form, factuurKleur: e.target.value })} className="w-24 px-2 py-1.5 border rounded text-sm font-mono" />
+              <input type="color" value={form.factuurKleur} onChange={e => updateForm({ factuurKleur: e.target.value })} className="w-10 h-8 border rounded cursor-pointer" />
+              <input value={form.factuurKleur} onChange={e => updateForm({ factuurKleur: e.target.value })} className="w-24 px-2 py-1.5 border rounded text-sm font-mono" />
             </div>
           </div>
         </div>

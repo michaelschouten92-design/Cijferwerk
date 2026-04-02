@@ -1,6 +1,7 @@
 'use client';
 
 import { formatEuro } from '@/lib/format';
+import { useUnsavedWarning, useEscapeKey } from '@/lib/useUnsavedWarning';
 import { useEffect, useState } from 'react';
 import { FileText, Send, X, CheckCircle, Trash2, RotateCcw, RefreshCw, Link2, Search } from 'lucide-react';
 
@@ -23,7 +24,11 @@ interface Relatie {
 
 
 function totaal(f: Factuur) {
-  return f.regels.reduce((s, r) => s + r.aantal * r.stuksprijs * (1 + r.btwPercentage), 0);
+  return f.regels.reduce((s, r) => {
+    const regelExcl = Math.round(r.aantal * r.stuksprijs * 100) / 100;
+    const regelBtw = Math.round(regelExcl * r.btwPercentage * 100) / 100;
+    return s + regelExcl + regelBtw;
+  }, 0);
 }
 
 function dagenOver(f: Factuur): number {
@@ -335,6 +340,7 @@ export default function FacturenPage() {
 }
 
 function MarkeerBetaaldModal({ factuur, onClose, onSave }: { factuur: Factuur; onClose: () => void; onSave: () => void }) {
+  useEscapeKey(onClose);
   const [saving, setSaving] = useState(false);
 
   async function handleMarkeer() {
@@ -369,6 +375,7 @@ function MarkeerBetaaldModal({ factuur, onClose, onSave }: { factuur: Factuur; o
 }
 
 function SendInvoiceModal({ factuur, onClose }: { factuur: Factuur; onClose: () => void }) {
+  useEscapeKey(onClose);
   const [to, setTo] = useState(factuur.relatie.email || '');
   const [bericht, setBericht] = useState('');
   const [sending, setSending] = useState(false);
@@ -437,6 +444,8 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
     regels: [{ aantal: 1, beschrijving: '', stuksprijs: 0, btwPercentage: 0.21 }],
   });
   const [relaties, setRelaties] = useState<Relatie[]>([]);
+  const isDirty = form.regels.some(r => r.beschrijving.trim() || r.stuksprijs > 0) || form.relatieId !== '';
+  useUnsavedWarning(isDirty);
 
   useEffect(() => {
     // Auto factuurnummer ophogen
@@ -472,10 +481,15 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const geldigeRegels = form.regels.filter(r => r.beschrijving.trim() && r.stuksprijs > 0);
+    if (geldigeRegels.length === 0) {
+      alert('Voeg minimaal één regel toe met een omschrijving en prijs groter dan 0.');
+      return;
+    }
     await fetch('/api/invoices', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, relatieId: parseInt(form.relatieId) }),
+      body: JSON.stringify({ ...form, regels: geldigeRegels, relatieId: parseInt(form.relatieId) }),
     });
     onSave();
   }
@@ -514,11 +528,11 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
       <h4 className="text-sm font-medium text-gray-700 mb-2">Regels</h4>
       {form.regels.map((r, i) => (
         <div key={i} className="grid grid-cols-12 gap-2 mb-2 items-center">
-          <input type="number" value={r.aantal} onChange={e => updateRegel(i, 'aantal', parseInt(e.target.value) || 1)}
+          <input type="number" min={1} value={r.aantal} onChange={e => updateRegel(i, 'aantal', parseInt(e.target.value) || 1)}
             className="col-span-1 px-2 py-2 border rounded-lg text-sm text-center" placeholder="#" />
           <input type="text" value={r.beschrijving} onChange={e => updateRegel(i, 'beschrijving', e.target.value)}
             className="col-span-5 px-3 py-2 border rounded-lg text-sm" placeholder="Omschrijving" />
-          <input type="number" step="0.01" value={r.stuksprijs || ''} onChange={e => updateRegel(i, 'stuksprijs', parseFloat(e.target.value) || 0)}
+          <input type="number" step="0.01" min={0} value={r.stuksprijs || ''} onChange={e => updateRegel(i, 'stuksprijs', parseFloat(e.target.value) || 0)}
             className="col-span-2 px-3 py-2 border rounded-lg text-sm" placeholder="Prijs" />
           <select value={r.btwPercentage} onChange={e => updateRegel(i, 'btwPercentage', parseFloat(e.target.value))}
             className="col-span-2 px-2 py-2 border rounded-lg text-sm">
@@ -623,11 +637,11 @@ function SjabloonForm({ onSave, onCancel }: { onSave: () => void; onCancel: () =
       <label className="block text-xs text-gray-500 mb-1">Factuurregels</label>
       {form.regels.map((r, i) => (
         <div key={i} className="grid grid-cols-12 gap-2 mb-2">
-          <input type="number" value={r.aantal} onChange={e => updateRegel(i, 'aantal', parseInt(e.target.value) || 1)}
+          <input type="number" min={1} value={r.aantal} onChange={e => updateRegel(i, 'aantal', parseInt(e.target.value) || 1)}
             className="col-span-1 px-2 py-1.5 border rounded text-sm text-center" />
           <input value={r.beschrijving} onChange={e => updateRegel(i, 'beschrijving', e.target.value)}
             className="col-span-5 px-2 py-1.5 border rounded text-sm" placeholder="Omschrijving" />
-          <input type="number" step="0.01" value={r.stuksprijs || ''} onChange={e => updateRegel(i, 'stuksprijs', parseFloat(e.target.value) || 0)}
+          <input type="number" step="0.01" min={0} value={r.stuksprijs || ''} onChange={e => updateRegel(i, 'stuksprijs', parseFloat(e.target.value) || 0)}
             className="col-span-3 px-2 py-1.5 border rounded text-sm" placeholder="Prijs" />
           <select value={r.btwPercentage} onChange={e => updateRegel(i, 'btwPercentage', parseFloat(e.target.value))}
             className="col-span-3 px-2 py-1.5 border rounded text-sm">
@@ -649,6 +663,7 @@ function SjabloonForm({ onSave, onCancel }: { onSave: () => void; onCancel: () =
 }
 
 function KoppelModal({ factuur, onClose, onSave }: { factuur: Factuur; onClose: () => void; onSave: () => void }) {
+  useEscapeKey(onClose);
   const [transacties, setTransacties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

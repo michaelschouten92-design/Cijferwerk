@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { genereerBtwAangifte } from '@/lib/btw';
-import { berekenAfschrijvingen, round2 as sharedRound2 } from '@/lib/calculations';
+import { berekenAfschrijvingen, round2 } from '@/lib/calculations';
 
 /**
  * GET /api/dashboard?jaar=2026 - Dashboard overzichtsdata
@@ -54,7 +54,11 @@ export async function GET(req: NextRequest) {
     prisma.factuur.findMany({ where: { status: 'openstaand' }, include: { relatie: true, regels: true } }),
   ]);
   const openstaand = openstaandeFacturen.map(f => {
-    const totaal = f.regels.reduce((s, r) => s + r.aantal * r.stuksprijs * (1 + r.btwPercentage), 0);
+    const totaal = f.regels.reduce((s, r) => {
+      const regelExcl = round2(r.aantal * r.stuksprijs);
+      const regelBtw = round2(regelExcl * r.btwPercentage);
+      return s + regelExcl + regelBtw;
+    }, 0);
     const dagenOver = Math.floor((Date.now() - new Date(f.vervaldatum).getTime()) / 86400000);
     return {
       id: f.id,
@@ -124,6 +128,3 @@ async function getKlaarstaandeSjablonen() {
   }));
 }
 
-function round2(n: number): number {
-  return Math.round(n * 100) / 100;
-}

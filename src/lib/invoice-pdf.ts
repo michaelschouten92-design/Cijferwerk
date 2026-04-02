@@ -57,16 +57,20 @@ export function genereerFactuurHTML(data: FactuurData): string {
   const klantHeeftBtwNr = !!data.klant.btwNummer;
 
   // Betalingstermijn berekenen vanuit vervaldatum
-  const datumParts = data.datum.split('-');
-  const vervaldatumParts = data.vervaldatum.split('-');
   let betalingstermijn = 14; // fallback
-  if (datumParts.length >= 3 && vervaldatumParts.length >= 3) {
-    // NL datum format: dd-mm-yyyy
-    const d1 = new Date(parseInt(datumParts[2]), parseInt(datumParts[1]) - 1, parseInt(datumParts[0]));
-    const d2 = new Date(parseInt(vervaldatumParts[2]), parseInt(vervaldatumParts[1]) - 1, parseInt(vervaldatumParts[0]));
-    const diff = Math.round((d2.getTime() - d1.getTime()) / 86400000);
-    if (diff > 0) betalingstermijn = diff;
-  }
+  try {
+    const datumParts = data.datum.split('-');
+    const vervaldatumParts = data.vervaldatum.split('-');
+    if (datumParts.length >= 3 && vervaldatumParts.length >= 3) {
+      // NL datum format: dd-mm-yyyy
+      const d1 = new Date(parseInt(datumParts[2]), parseInt(datumParts[1]) - 1, parseInt(datumParts[0]));
+      const d2 = new Date(parseInt(vervaldatumParts[2]), parseInt(vervaldatumParts[1]) - 1, parseInt(vervaldatumParts[0]));
+      if (!isNaN(d1.getTime()) && !isNaN(d2.getTime())) {
+        const diff = Math.round((d2.getTime() - d1.getTime()) / 86400000);
+        if (diff > 0) betalingstermijn = diff;
+      }
+    }
+  } catch { /* gebruik fallback */ }
 
   const logoHoogte = data.logoGrootte || 60;
   const logoMaxBreedte = Math.round(logoHoogte * 3.33);
