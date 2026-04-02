@@ -554,7 +554,7 @@ function BijlageUpload({ transactieId, bijlageNaam, onUpdate }: { transactieId: 
     return (
       <div className="flex items-center gap-2">
         <a href={`/api/transactions/bijlage?id=${transactieId}`} target="_blank"
-          className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800">
+          className="inline-flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-800">
           <Paperclip className="w-3.5 h-3.5" /> {bijlageNaam}
         </a>
         <button onClick={handleDelete} className="text-xs text-red-500 hover:text-red-700">Verwijderen</button>

@@ -121,7 +121,7 @@ export default function ActivaPage() {
                   <td className="px-4 py-3 text-center text-gray-500">{a.levensduurJaren} jr</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
-                      <button onClick={() => setEditId(a.id)} className="p-1 text-gray-400 hover:text-blue-600">
+                      <button onClick={() => setEditId(a.id)} className="p-1 text-gray-400 hover:text-brand-600">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <DeleteButton onDelete={async () => {

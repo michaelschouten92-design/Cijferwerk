@@ -50,7 +50,7 @@ export default function CategorieenPage() {
             <p className="text-sm text-gray-500 mt-1">Groepeer je transacties per soort uitgave of inkomst.</p>
           </div>
           <button onClick={() => setShowAddCat(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100">
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100">
             <Plus className="w-3.5 h-3.5" /> Toevoegen
           </button>
         </div>
@@ -78,13 +78,13 @@ export default function CategorieenPage() {
               </td></tr>
             ) : (
               <tr key={c.id}>
-                <td className="py-2 font-mono text-blue-600">{c.code}</td>
+                <td className="py-2 font-mono text-brand-600">{c.code}</td>
                 <td className="py-2">{c.naam}</td>
                 <td className="py-2"><span className={`px-2 py-0.5 rounded text-xs ${c.type === 'omzet' ? 'bg-green-100 text-green-700' : c.type === 'kosten' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>{c.type}</span></td>
                 <td className="py-2">{(c.btwTarief * 100).toFixed(0)}%</td>
                 <td className="py-2">
                   <div className="flex gap-1">
-                    <button onClick={() => setEditCat(c.id)} className="p-1 text-gray-400 hover:text-blue-600"><Pencil className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setEditCat(c.id)} className="p-1 text-gray-400 hover:text-brand-600"><Pencil className="w-3.5 h-3.5" /></button>
                     <DeleteButton onDelete={async () => {
                       const res = await fetch(`/api/categories?id=${c.id}`, { method: 'DELETE' });
                       const data = await res.json();
@@ -106,7 +106,7 @@ export default function CategorieenPage() {
             <p className="text-sm text-gray-500 mt-1">Transacties worden automatisch gecategoriseerd als de naam of omschrijving overeenkomt. Hogere prioriteit wint.</p>
           </div>
           <button onClick={() => setShowAddRegel(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100">
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100">
             <Plus className="w-3.5 h-3.5" /> Toevoegen
           </button>
         </div>
@@ -134,14 +134,14 @@ export default function CategorieenPage() {
               </td></tr>
             ) : (
               <tr key={r.id}>
-                <td className="py-2 font-mono text-blue-600">{r.zoekterm}</td>
+                <td className="py-2 font-mono text-brand-600">{r.zoekterm}</td>
                 <td className="py-2 text-gray-500">{r.zoekVeld === 'tegenpartij' ? 'Naam' : 'Omschrijving'}</td>
                 <td className="py-2"><span className="px-2 py-1 bg-gray-100 rounded text-xs">{categorieen.find(c => c.code === r.categorieCode)?.naam || r.categorieCode}</span></td>
                 <td className="py-2">{r.btwTarief !== null ? `${(r.btwTarief * 100).toFixed(0)}%` : 'auto'}</td>
                 <td className="py-2 text-gray-400">{r.prioriteit}</td>
                 <td className="py-2">
                   <div className="flex gap-1">
-                    <button onClick={() => setEditRegel(r.id)} className="p-1 text-gray-400 hover:text-blue-600"><Pencil className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setEditRegel(r.id)} className="p-1 text-gray-400 hover:text-brand-600"><Pencil className="w-3.5 h-3.5" /></button>
                     <DeleteButton onDelete={async () => { await fetch(`/api/categories/regels?id=${r.id}`, { method: 'DELETE' }); loadData(); }} />
                   </div>
                 </td>

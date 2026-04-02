@@ -53,14 +53,14 @@ export default function SettingsPage() {
       {/* Bank Import instructies */}
       <div className="bg-white rounded-xl shadow-card p-6 mb-6">
         <h3 className="font-semibold text-gray-900 mb-4">Transacties importeren</h3>
-        <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
+        <div className="bg-brand-50 rounded-lg p-4 text-sm text-brand-800">
           <p className="font-medium mb-2">Hoe werkt het:</p>
-          <ol className="list-decimal list-inside space-y-1 text-blue-700">
+          <ol className="list-decimal list-inside space-y-1 text-brand-700">
             <li>Ga naar je bank en open het transactie-overzicht</li>
             <li>Exporteer als <strong>CSV</strong> of <strong>MT940</strong></li>
             <li>Klik op <strong>Importeer</strong> op het Overzicht of de Transacties pagina</li>
           </ol>
-          <p className="mt-3 text-xs text-blue-600">Ondersteunde banken: Revolut, ING, Rabobank, ABN AMRO, Bunq en andere banken met CSV of MT940 export. Duplicaten worden automatisch herkend.</p>
+          <p className="mt-3 text-xs text-brand-600">Ondersteunde banken: Revolut, ING, Rabobank, ABN AMRO, Bunq en andere banken met CSV of MT940 export. Duplicaten worden automatisch herkend.</p>
         </div>
       </div>
 

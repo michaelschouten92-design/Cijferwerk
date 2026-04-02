@@ -167,13 +167,13 @@ export default function OnboardingPage() {
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800 mb-4">
+            <div className="bg-brand-50 rounded-lg p-4 text-sm text-brand-800 mb-4">
               <p className="font-medium mb-1">Ondersteunde banken:</p>
-              <p className="text-blue-700">Revolut, ING, Rabobank, ABN AMRO, Bunq en andere banken die CSV exporteren.</p>
-              <p className="text-blue-600 text-xs mt-2">Ga naar je bank → Transactie-overzicht → Export → CSV</p>
+              <p className="text-brand-700">Revolut, ING, Rabobank, ABN AMRO, Bunq en andere banken die CSV exporteren.</p>
+              <p className="text-brand-600 text-xs mt-2">Ga naar je bank → Transactie-overzicht → Export → CSV</p>
             </div>
 
-            <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-8 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors">
+            <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-8 cursor-pointer hover:border-brand-400 hover:bg-brand-50/50 transition-colors">
               <Upload className="w-8 h-8 text-gray-400 mb-2" />
               <span className="text-sm text-gray-600">Klik om je CSV te selecteren</span>
               <input type="file" accept=".csv" onChange={handleCSV} className="hidden" />

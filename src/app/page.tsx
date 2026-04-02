@@ -191,7 +191,7 @@ export default function Dashboard() {
               className={`flex items-center justify-between p-3 rounded-lg text-sm transition-all duration-200 animate-fade-in-up ${
                 a.type === 'danger' ? 'bg-red-50 text-red-700 hover:bg-red-100' :
                 a.type === 'warn' ? 'bg-amber-50 text-amber-700 hover:bg-amber-100' :
-                'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                'bg-brand-50 text-brand-700 hover:bg-brand-100'
               }`}
               style={{ animationDelay: `${i * 50}ms` }}>
               <div className="flex items-center gap-2">

@@ -295,7 +295,7 @@ export default function FacturenPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                       <a href={`/api/invoices/${f.id}/pdf`} target="_blank"
-                        className="text-blue-600 hover:text-blue-800 text-sm">PDF</a>
+                        className="text-brand-600 hover:text-brand-800 text-sm">PDF</a>
                       <button onClick={() => handleCreditnota(f)}
                         className="text-orange-500 hover:text-orange-700 text-sm">Credit</button>
                       <button onClick={() => setDeleteModal(f)}
@@ -537,7 +537,7 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
       ))}
 
       <div className="flex items-center justify-between mt-4">
-        <button type="button" onClick={addRegel} className="text-blue-600 text-sm hover:text-blue-800">+ Regel toevoegen</button>
+        <button type="button" onClick={addRegel} className="text-brand-600 text-sm hover:text-brand-800">+ Regel toevoegen</button>
         <div className="text-right text-sm space-y-1">
           <div className="text-gray-500">Subtotaal: {formatEuro(subtotaal)}</div>
           <div className="text-gray-500">BTW: {formatEuro(btwTotaal)}</div>
@@ -638,7 +638,7 @@ function SjabloonForm({ onSave, onCancel }: { onSave: () => void; onCancel: () =
         </div>
       ))}
       <button type="button" onClick={() => setForm({ ...form, regels: [...form.regels, { aantal: 1, beschrijving: '', stuksprijs: 0, btwPercentage: 0.21 }] })}
-        className="text-blue-600 text-sm hover:text-blue-800 mb-3">+ Regel</button>
+        className="text-brand-600 text-sm hover:text-brand-800 mb-3">+ Regel</button>
 
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onCancel} className="px-4 py-1.5 text-sm text-gray-600">Annuleer</button>
