@@ -40,6 +40,7 @@ function ensureDataDir() {
       log('ERROR: Template database niet gevonden: ' + templatePath);
     }
   }
+
 }
 
 function startServer(): Promise<void> {
