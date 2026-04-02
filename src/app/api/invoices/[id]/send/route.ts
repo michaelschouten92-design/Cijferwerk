@@ -51,6 +51,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       btwPercentage: r.btwPercentage,
     })),
     logo: settings.factuurLogo,
+    logoGrootte: settings.factuurLogoGrootte || 60,
     kleur: settings.factuurKleur,
   });
 

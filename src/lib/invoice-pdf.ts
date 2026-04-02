@@ -33,6 +33,7 @@ interface FactuurData {
     btwPercentage: number;
   }[];
   logo?: string | null;
+  logoGrootte?: number;
   kleur?: string;
 }
 
@@ -67,8 +68,10 @@ export function genereerFactuurHTML(data: FactuurData): string {
     if (diff > 0) betalingstermijn = diff;
   }
 
+  const logoHoogte = data.logoGrootte || 60;
+  const logoMaxBreedte = Math.round(logoHoogte * 3.33);
   const logoHtml = data.logo
-    ? `<img src="${data.logo}" style="max-height:60px;max-width:200px;" alt="Logo" />`
+    ? `<img src="${data.logo}" style="max-height:${logoHoogte}px;max-width:${logoMaxBreedte}px;" alt="Logo" />`
     : `<h1 style="font-size:28px;color:${kleur};font-weight:700;margin:0;">${isCreditnota ? 'CREDITNOTA' : 'FACTUUR'}</h1>`;
 
   // BTW-vermelding onderaan factuur

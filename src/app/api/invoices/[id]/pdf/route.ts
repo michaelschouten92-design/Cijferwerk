@@ -15,6 +15,7 @@ async function getBedrijfsgegevens() {
     btw: s?.bedrijfBtw || process.env.COMPANY_BTW || '',
     iban: s?.bedrijfIban || process.env.COMPANY_IBAN || '',
     logo: s?.factuurLogo || null,
+    logoGrootte: s?.factuurLogoGrootte || 60,
     kleur: s?.factuurKleur || '#2563eb',
   };
 }
@@ -58,6 +59,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       btwPercentage: r.btwPercentage,
     })),
     logo: bedrijf.logo,
+    logoGrootte: bedrijf.logoGrootte,
     kleur: bedrijf.kleur,
   });
 

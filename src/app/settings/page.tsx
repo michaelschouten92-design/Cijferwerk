@@ -105,7 +105,7 @@ function BedrijfsSection() {
   const [form, setForm] = useState({
     bedrijfNaam: '', bedrijfContact: '', bedrijfAdres: '', bedrijfPostcode: '',
     bedrijfTelefoon: '', bedrijfEmail: '', bedrijfKvk: '', bedrijfBtw: '', bedrijfIban: '',
-    factuurKleur: '#2563eb', factuurLogo: '' as string | null,
+    factuurKleur: '#2563eb', factuurLogo: '' as string | null, factuurLogoGrootte: 60,
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -118,7 +118,7 @@ function BedrijfsSection() {
         bedrijfAdres: data.bedrijfAdres || '', bedrijfPostcode: data.bedrijfPostcode || '',
         bedrijfTelefoon: data.bedrijfTelefoon || '', bedrijfEmail: data.bedrijfEmail || '',
         bedrijfKvk: data.bedrijfKvk || '', bedrijfBtw: data.bedrijfBtw || '', bedrijfIban: data.bedrijfIban || '',
-        factuurKleur: data.factuurKleur || '#2563eb', factuurLogo: data.factuurLogo || null,
+        factuurKleur: data.factuurKleur || '#2563eb', factuurLogo: data.factuurLogo || null, factuurLogoGrootte: data.factuurLogoGrootte || 60,
       });
       setLoaded(true);
     }).catch(() => setLoaded(true));
@@ -167,6 +167,29 @@ function BedrijfsSection() {
               <label className="cursor-pointer px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200">{form.factuurLogo ? 'Wijzigen' : 'Upload logo'}<input type="file" accept="image/*" onChange={handleLogo} className="hidden" /></label>
               {form.factuurLogo && <button onClick={() => setForm({ ...form, factuurLogo: null })} className="text-xs text-red-500 hover:text-red-700">Verwijderen</button>}
             </div>
+            {form.factuurLogo && (
+              <div className="mt-3">
+                <label className="block text-xs text-gray-500 mb-1">Logogrootte</label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">Klein</span>
+                  <input type="range" min={20} max={120} step={5} value={form.factuurLogoGrootte} onChange={e => setForm({ ...form, factuurLogoGrootte: parseInt(e.target.value) })} className="flex-1 accent-brand-600" />
+                  <span className="text-xs text-gray-400">Groot</span>
+                </div>
+              </div>
+            )}
+            {form.factuurLogo && (
+              <div className="mt-3 border rounded-lg p-4 bg-gray-50" style={{ maxWidth: 420 }}>
+                <p className="text-[10px] text-gray-400 mb-2">Voorbeeld factuurkop</p>
+                <div className="flex justify-between items-start">
+                  <img src={form.factuurLogo} alt="Logo" style={{ maxHeight: form.factuurLogoGrootte, maxWidth: Math.round(form.factuurLogoGrootte * 3.33) }} className="object-contain" />
+                  <div className="text-right text-[11px] text-gray-500 leading-relaxed">
+                    <strong className="text-gray-700">{form.bedrijfNaam || 'Bedrijfsnaam'}</strong><br />
+                    {form.bedrijfAdres || 'Adres'}<br />
+                    {form.bedrijfPostcode || 'Postcode + plaats'}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">Accentkleur</label>

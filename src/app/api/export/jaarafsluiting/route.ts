@@ -148,6 +148,7 @@ export async function GET(req: NextRequest) {
       bedrijf: bedrijfVolledig,
       regels: f.regels.map(r => ({ aantal: r.aantal, beschrijving: r.beschrijving, stuksprijs: r.stuksprijs, btwPercentage: r.btwPercentage })),
       logo: settings?.factuurLogo,
+      logoGrootte: settings?.factuurLogoGrootte || 60,
       kleur: settings?.factuurKleur,
     });
     archive.append(fHtml, { name: `Facturen/Factuur-${f.nummer}.html` });

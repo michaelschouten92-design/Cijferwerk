@@ -25,6 +25,7 @@ export async function GET() {
     bedrijfBtw: settings.bedrijfBtw,
     bedrijfIban: settings.bedrijfIban,
     factuurLogo: settings.factuurLogo,
+    factuurLogoGrootte: settings.factuurLogoGrootte,
     factuurKleur: settings.factuurKleur,
   });
 }
@@ -38,7 +39,7 @@ export async function PUT(req: NextRequest) {
     'smtpHost', 'smtpPort', 'smtpUser', 'smtpPass', 'smtpFrom',
     'bedrijfNaam', 'bedrijfContact', 'bedrijfAdres', 'bedrijfPostcode',
     'bedrijfTelefoon', 'bedrijfEmail', 'bedrijfKvk', 'bedrijfBtw', 'bedrijfIban',
-    'factuurLogo', 'factuurKleur',
+    'factuurLogo', 'factuurLogoGrootte', 'factuurKleur',
   ];
 
   for (const veld of velden) {
@@ -68,6 +69,7 @@ export async function PUT(req: NextRequest) {
     bedrijfBtw: settings.bedrijfBtw,
     bedrijfIban: settings.bedrijfIban,
     factuurLogo: settings.factuurLogo,
+    factuurLogoGrootte: settings.factuurLogoGrootte,
     factuurKleur: settings.factuurKleur,
   });
 }

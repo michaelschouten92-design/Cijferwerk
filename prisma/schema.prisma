@@ -157,6 +157,7 @@ model AppSettings {
   bedrijfIban         String?
   // Factuur personalisatie
   factuurLogo         String?  // Base64 encoded logo
+  factuurLogoGrootte  Int      @default(60) // Max-hoogte logo in px
   factuurKleur        String   @default("#2563eb") // Hex kleurcode
   updatedAt           DateTime @updatedAt
 }
