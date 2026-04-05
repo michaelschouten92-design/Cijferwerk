@@ -72,12 +72,18 @@ export default function Dashboard() {
       .catch(() => setChecked(true));
   }, [router]);
 
+  const [error, setError] = useState<string | null>(null);
   const load = useCallback(() => {
-    fetch(`/api/dashboard?jaar=${jaar}`).then(r => r.json()).then(setData);
+    setError(null);
+    fetch(`/api/dashboard?jaar=${jaar}`).then(r => {
+      if (!r.ok) throw new Error('Laden mislukt');
+      return r.json();
+    }).then(setData).catch(() => setError('Dashboard kon niet geladen worden. Probeer de pagina te verversen.'));
   }, [jaar]);
 
   useEffect(() => { if (checked) load(); }, [load, checked]);
 
+  if (error) return <div className="max-w-4xl mx-auto p-8 text-center"><p className="text-red-600">{error}</p><button onClick={load} className="mt-4 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm">Opnieuw proberen</button></div>;
   if (!checked || !data) return <SkeletonDashboard />;
 
   const maxOmzet = Math.max(...data.omzetPerMaand, 1);

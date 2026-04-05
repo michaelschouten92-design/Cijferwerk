@@ -113,8 +113,12 @@ export async function POST(req: NextRequest) {
       // Herstel de backup als de swap mislukt
       if (fs.existsSync(backupPath)) fs.copyFileSync(backupPath, DB_PATH);
       if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+      await prisma.$connect();
       throw restoreErr;
     }
+
+    // Reconnect Prisma met de nieuwe database
+    await prisma.$connect();
 
     // Upload-bestanden herstellen
     for (const f of uploadFiles) {
@@ -123,8 +127,6 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, message: 'Database hersteld. Herlaad de pagina.' });
-
-    return NextResponse.json({ error: 'Upload een .zip of .db bestand' }, { status: 400 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

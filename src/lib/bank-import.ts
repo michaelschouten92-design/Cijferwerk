@@ -259,18 +259,23 @@ function parseAmount(str: string | undefined): number {
 function parseDate(dateStr: string): Date {
   if (!dateStr) throw new Error('Transactie heeft geen datum');
   let date: Date | null = null;
+  let y = 0, m = 0, d = 0;
   const iso = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (iso) date = new Date(parseInt(iso[1]), parseInt(iso[2]) - 1, parseInt(iso[3]));
+  if (iso) { y = parseInt(iso[1]); m = parseInt(iso[2]) - 1; d = parseInt(iso[3]); date = new Date(y, m, d); }
   if (!date) {
     const compact = dateStr.match(/^(\d{4})(\d{2})(\d{2})$/);
-    if (compact) date = new Date(parseInt(compact[1]), parseInt(compact[2]) - 1, parseInt(compact[3]));
+    if (compact) { y = parseInt(compact[1]); m = parseInt(compact[2]) - 1; d = parseInt(compact[3]); date = new Date(y, m, d); }
   }
   if (!date) {
     const eu = dateStr.match(/^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})/);
-    if (eu) date = new Date(parseInt(eu[3]), parseInt(eu[2]) - 1, parseInt(eu[1]));
+    if (eu) { y = parseInt(eu[3]); m = parseInt(eu[2]) - 1; d = parseInt(eu[1]); date = new Date(y, m, d); }
   }
   if (!date) date = new Date(dateStr);
   if (!date || isNaN(date.getTime())) {
+    throw new Error(`Ongeldige datum: "${dateStr}"`);
+  }
+  // Valideer dat de datum niet overflowed is (bijv. 31-02 → 03-03)
+  if (y && (date.getFullYear() !== y || date.getMonth() !== m || date.getDate() !== d)) {
     throw new Error(`Ongeldige datum: "${dateStr}"`);
   }
   return date;

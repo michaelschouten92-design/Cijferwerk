@@ -79,11 +79,20 @@ export async function POST(req: NextRequest) {
  * PUT /api/activa — Vast actief bewerken
  */
 export async function PUT(req: NextRequest) {
-  const body = await req.json();
-  const { id, ...data } = body;
-  if (data.aanschafDatum) data.aanschafDatum = new Date(data.aanschafDatum);
-  const actief = await prisma.vastActief.update({ where: { id }, data });
-  return NextResponse.json(actief);
+  try {
+    const body = await req.json();
+    const { id, ...data } = body;
+    if (data.aanschafDatum) {
+      data.aanschafDatum = new Date(data.aanschafDatum);
+      if (isNaN(data.aanschafDatum.getTime())) return NextResponse.json({ error: 'Ongeldige datum' }, { status: 400 });
+    }
+    if (data.levensduurJaren !== undefined && data.levensduurJaren < 1) return NextResponse.json({ error: 'Levensduur moet minimaal 1 jaar zijn' }, { status: 400 });
+    if (data.restwaarde !== undefined && data.aanschafWaarde !== undefined && data.restwaarde >= data.aanschafWaarde) {
+      return NextResponse.json({ error: 'Restwaarde moet lager zijn dan aanschafwaarde' }, { status: 400 });
+    }
+    const actief = await prisma.vastActief.update({ where: { id }, data });
+    return NextResponse.json(actief);
+  } catch (e: any) { return NextResponse.json({ error: e.message || 'Fout bij bijwerken' }, { status: 500 }); }
 }
 
 /**

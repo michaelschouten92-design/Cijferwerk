@@ -32,14 +32,14 @@ export default function KasboekPage() {
   function load() {
     fetch(`/api/transactions?jaar=${jaar}`).then(r => r.json()).then((all: any[]) => {
       setTransacties(all.filter(t => t.status === 'Contant'));
-    });
-    fetch('/api/categories').then(r => r.json()).then(d => setCategorieen(d.categorieen));
+    }).catch(() => {});
+    fetch('/api/categories').then(r => r.json()).then(d => setCategorieen(d.categorieen)).catch(() => {});
   }
 
   useEffect(() => { load(); }, [jaar]);
 
-  const totaalIn = transacties.filter(t => t.richting === 'verkoop').reduce((s, t) => s + t.bedragExclBtw + t.btwBedrag, 0);
-  const totaalUit = transacties.filter(t => t.richting === 'inkoop').reduce((s, t) => s + t.bedragExclBtw + t.btwBedrag, 0);
+  const totaalIn = Math.round(transacties.filter(t => t.richting === 'verkoop').reduce((s, t) => s + t.bedragExclBtw + t.btwBedrag, 0) * 100) / 100;
+  const totaalUit = Math.round(transacties.filter(t => t.richting === 'inkoop').reduce((s, t) => s + t.bedragExclBtw + t.btwBedrag, 0) * 100) / 100;
 
   async function handleDelete(id: number) {
     await fetch(`/api/transactions?id=${id}`, { method: 'DELETE' });

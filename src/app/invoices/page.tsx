@@ -476,8 +476,11 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
     setForm({ ...form, regels });
   }
 
-  const subtotaal = form.regels.reduce((s, r) => s + r.aantal * (r.stuksprijs || 0), 0);
-  const btwTotaal = form.regels.reduce((s, r) => s + r.aantal * (r.stuksprijs || 0) * r.btwPercentage, 0);
+  const subtotaal = form.regels.reduce((s, r) => s + Math.round(r.aantal * (r.stuksprijs || 0) * 100) / 100, 0);
+  const btwTotaal = form.regels.reduce((s, r) => {
+    const excl = Math.round(r.aantal * (r.stuksprijs || 0) * 100) / 100;
+    return s + Math.round(excl * r.btwPercentage * 100) / 100;
+  }, 0);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -541,7 +544,7 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
             <option value={0}>0%</option>
           </select>
           <div className="col-span-1 text-right text-sm text-gray-500">
-            {formatEuro(r.aantal * (r.stuksprijs || 0))}
+            {formatEuro(Math.round(r.aantal * (r.stuksprijs || 0) * 100) / 100)}
           </div>
           <button type="button" onClick={() => removeRegel(i)}
             className="col-span-1 text-gray-300 hover:text-red-500 text-center">

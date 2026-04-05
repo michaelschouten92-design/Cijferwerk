@@ -10,27 +10,29 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const categorie = await prisma.categorie.create({
-    data: {
-      code: body.code,
-      naam: body.naam,
-      type: body.type,
-      btwTarief: body.btwTarief ?? 0.21,
-      btwVrijgesteld: body.btwVrijgesteld ?? false,
-    },
-  });
-  return NextResponse.json(categorie);
+  try {
+    const body = await req.json();
+    if (!body.code?.trim() || !body.naam?.trim()) return NextResponse.json({ error: 'Code en naam zijn verplicht' }, { status: 400 });
+    const categorie = await prisma.categorie.create({
+      data: {
+        code: body.code.trim(),
+        naam: body.naam.trim(),
+        type: body.type || 'kosten',
+        btwTarief: body.btwTarief ?? 0.21,
+        btwVrijgesteld: body.btwVrijgesteld ?? false,
+      },
+    });
+    return NextResponse.json(categorie);
+  } catch (e: any) { return NextResponse.json({ error: e.message || 'Fout bij opslaan' }, { status: 500 }); }
 }
 
 export async function PUT(req: NextRequest) {
-  const body = await req.json();
-  const { id, ...data } = body;
-  const categorie = await prisma.categorie.update({
-    where: { id },
-    data,
-  });
-  return NextResponse.json(categorie);
+  try {
+    const body = await req.json();
+    const { id, ...data } = body;
+    const categorie = await prisma.categorie.update({ where: { id }, data });
+    return NextResponse.json(categorie);
+  } catch (e: any) { return NextResponse.json({ error: e.message || 'Fout bij bijwerken' }, { status: 500 }); }
 }
 
 export async function DELETE(req: NextRequest) {

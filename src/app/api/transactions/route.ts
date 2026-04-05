@@ -37,38 +37,50 @@ export async function GET(req: NextRequest) {
  * POST /api/transactions - Handmatig transactie toevoegen
  */
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  try {
+    const body = await req.json();
 
-  // BTW altijd server-side berekenen, nooit client-waarde vertrouwen
-  const bedragExclBtw = Math.abs(body.bedragExclBtw);
-  const btwPercentage = body.btwPercentage ?? 0.21;
-  const btwBedrag = Math.round(bedragExclBtw * btwPercentage * 100) / 100;
+    // Validatie
+    if (!body.omschrijving?.trim()) return NextResponse.json({ error: 'Omschrijving is verplicht' }, { status: 400 });
+    if (!body.richting || !['inkoop', 'verkoop'].includes(body.richting)) return NextResponse.json({ error: 'Richting moet inkoop of verkoop zijn' }, { status: 400 });
+    const datum = new Date(body.datum);
+    if (isNaN(datum.getTime())) return NextResponse.json({ error: 'Ongeldige datum' }, { status: 400 });
+    if (body.bedragExclBtw === undefined || isNaN(body.bedragExclBtw)) return NextResponse.json({ error: 'Bedrag is verplicht' }, { status: 400 });
 
-  const transactie = await prisma.transactie.create({
-    data: {
-      datum: new Date(body.datum),
-      soort: body.soort || 'Overig',
-      factuurnummer: body.factuurnummer,
-      omschrijving: body.omschrijving,
-      bedragExclBtw,
-      btwPercentage,
-      btwBedrag,
-      status: body.status || 'Betaald via Bank',
-      richting: body.richting,
-      gecategoriseerd: true,
-      relatieId: body.relatieId,
-      categorieId: body.categorieId,
-    },
-    include: { relatie: true, categorie: true },
-  });
+    // BTW altijd server-side berekenen, nooit client-waarde vertrouwen
+    const bedragExclBtw = Math.abs(body.bedragExclBtw);
+    const btwPercentage = body.btwPercentage ?? 0.21;
+    const btwBedrag = Math.round(bedragExclBtw * btwPercentage * 100) / 100;
 
-  return NextResponse.json(transactie);
+    const transactie = await prisma.transactie.create({
+      data: {
+        datum,
+        soort: body.soort || 'Overig',
+        factuurnummer: body.factuurnummer,
+        omschrijving: body.omschrijving.trim(),
+        bedragExclBtw,
+        btwPercentage,
+        btwBedrag,
+        status: body.status || 'Betaald via Bank',
+        richting: body.richting,
+        gecategoriseerd: true,
+        relatieId: body.relatieId,
+        categorieId: body.categorieId,
+      },
+      include: { relatie: true, categorie: true },
+    });
+
+    return NextResponse.json(transactie);
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message || 'Fout bij opslaan' }, { status: 500 });
+  }
 }
 
 /**
  * PUT /api/transactions - Update transactie (voor hercategorisatie)
  */
 export async function PUT(req: NextRequest) {
+  try {
   const body = await req.json();
   const { id, ...data } = body;
 
@@ -109,6 +121,7 @@ export async function PUT(req: NextRequest) {
   }
 
   return NextResponse.json(transactie);
+  } catch (e: any) { return NextResponse.json({ error: e.message || 'Fout bij bijwerken' }, { status: 500 }); }
 }
 
 /**

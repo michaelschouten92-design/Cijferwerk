@@ -172,12 +172,12 @@ function ActivaForm({ initial, onSave, onCancel }: {
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1">Aanschafwaarde (excl. BTW)</label>
-          <input type="number" step="0.01" value={form.aanschafWaarde} onChange={e => setForm({ ...form, aanschafWaarde: e.target.value })}
+          <input type="number" step="0.01" min="0.01" value={form.aanschafWaarde} onChange={e => setForm({ ...form, aanschafWaarde: e.target.value })}
             className="w-full px-3 py-1.5 border rounded text-sm" />
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1">Restwaarde</label>
-          <input type="number" step="0.01" value={form.restwaarde} onChange={e => setForm({ ...form, restwaarde: e.target.value })}
+          <input type="number" step="0.01" min="0" value={form.restwaarde} onChange={e => setForm({ ...form, restwaarde: e.target.value })}
             className="w-full px-3 py-1.5 border rounded text-sm" />
         </div>
         <div>

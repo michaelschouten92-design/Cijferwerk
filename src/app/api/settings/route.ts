@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, ensureMigrated } from '@/lib/db';
 
 export async function GET() {
+  await ensureMigrated();
   const settings = await prisma.appSettings.upsert({
     where: { id: 1 },
     create: {},
@@ -31,6 +32,7 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
+  await ensureMigrated();
   const body = await req.json();
   const data: Record<string, any> = {};
 

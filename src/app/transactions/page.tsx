@@ -56,15 +56,15 @@ export default function TransactiesPage() {
 
   useEffect(() => {
     loadTransacties();
-    fetch('/api/categories').then(r => r.json()).then(d => setCategorieen(d.categorieen));
-    fetch('/api/relaties').then(r => r.json()).then(setRelaties);
+    fetch('/api/categories').then(r => r.json()).then(d => setCategorieen(d.categorieen)).catch(() => {});
+    fetch('/api/relaties').then(r => r.json()).then(setRelaties).catch(() => {});
   }, []);
 
   useEffect(() => { loadTransacties(); }, [filter, jaar]);
 
   function loadTransacties() {
     const params = filter !== 'alle' ? `?richting=${filter}&jaar=${jaar}` : `?jaar=${jaar}`;
-    fetch(`/api/transactions${params}`).then(r => r.json()).then(setTransacties);
+    fetch(`/api/transactions${params}`).then(r => r.json()).then(setTransacties).catch(() => {});
   }
 
   const filtered = transacties.filter(tx => {
@@ -512,7 +512,7 @@ function AddTransactionForm({ onSave }: { onSave: () => void }) {
         </div>
         <div>
           <label className="block text-sm text-gray-600 mb-1">Bedrag excl. BTW</label>
-          <input type="number" step="0.01" value={form.bedragExclBtw} onChange={e => setForm({ ...form, bedragExclBtw: e.target.value })}
+          <input type="number" step="0.01" min="0.01" value={form.bedragExclBtw} onChange={e => setForm({ ...form, bedragExclBtw: e.target.value })}
             className="w-full px-3 py-2 border rounded-lg text-sm" required />
         </div>
         <div>

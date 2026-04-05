@@ -9,28 +9,33 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const relatie = await prisma.relatie.create({
-    data: {
-      naam: body.naam,
-      adres: body.adres || null,
-      postcode: body.postcode || null,
-      plaats: body.plaats || null,
-      land: body.land || 'NL',
-      telefoon: body.telefoon || null,
-      email: body.email || null,
-      btwNummer: body.btwNummer || null,
-      type: body.type || 'leverancier',
-    },
-  });
-  return NextResponse.json(relatie);
+  try {
+    const body = await req.json();
+    if (!body.naam?.trim()) return NextResponse.json({ error: 'Naam is verplicht' }, { status: 400 });
+    const relatie = await prisma.relatie.create({
+      data: {
+        naam: body.naam.trim(),
+        adres: body.adres || null,
+        postcode: body.postcode || null,
+        plaats: body.plaats || null,
+        land: body.land || 'NL',
+        telefoon: body.telefoon || null,
+        email: body.email || null,
+        btwNummer: body.btwNummer || null,
+        type: body.type || 'leverancier',
+      },
+    });
+    return NextResponse.json(relatie);
+  } catch (e: any) { return NextResponse.json({ error: e.message || 'Fout bij opslaan' }, { status: 500 }); }
 }
 
 export async function PUT(req: NextRequest) {
-  const body = await req.json();
-  const { id, ...data } = body;
-  const relatie = await prisma.relatie.update({ where: { id }, data });
-  return NextResponse.json(relatie);
+  try {
+    const body = await req.json();
+    const { id, ...data } = body;
+    const relatie = await prisma.relatie.update({ where: { id }, data });
+    return NextResponse.json(relatie);
+  } catch (e: any) { return NextResponse.json({ error: e.message || 'Fout bij bijwerken' }, { status: 500 }); }
 }
 
 export async function DELETE(req: NextRequest) {

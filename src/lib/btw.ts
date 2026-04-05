@@ -64,8 +64,8 @@ export async function berekenBtwPeriode(
   ];
 
   const regels: BtwRegel[] = tarieven.map(({ tarief, label }) => {
-    const verkoop = transacties.filter(t => t.richting === 'verkoop' && t.btwPercentage === tarief);
-    const inkoop = transacties.filter(t => t.richting === 'inkoop' && t.btwPercentage === tarief);
+    const verkoop = transacties.filter(t => t.richting === 'verkoop' && Math.abs(t.btwPercentage - tarief) < 0.001);
+    const inkoop = transacties.filter(t => t.richting === 'inkoop' && Math.abs(t.btwPercentage - tarief) < 0.001);
 
     return {
       label,

@@ -79,7 +79,11 @@ export async function GET(req: NextRequest) {
     include: { regels: true },
   });
   const debiteuren = round2(openstaand.reduce((sum, f) => {
-    return sum + f.regels.reduce((s, r) => s + r.aantal * r.stuksprijs * (1 + r.btwPercentage), 0);
+    return sum + f.regels.reduce((s, r) => {
+      const regelExcl = round2(r.aantal * r.stuksprijs);
+      const regelBtw = round2(regelExcl * r.btwPercentage);
+      return s + regelExcl + regelBtw;
+    }, 0);
   }, 0));
 
   let btwPositie = 0;
