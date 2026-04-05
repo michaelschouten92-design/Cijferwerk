@@ -32,18 +32,24 @@ jobs:
 
       - name: Generate Prisma client
         run: npx prisma generate
+        env:
+          DATABASE_URL: file:./build.db
 
       - name: Generate icon
         run: npm run build:icon
 
       - name: Build Next.js
         run: npm run build
+        env:
+          DATABASE_URL: file:./build.db
 
       - name: Build Electron main
         run: npm run build:electron
 
       - name: Build template database
         run: npm run build:template-db
+        env:
+          DATABASE_URL: file:./build.db
 
       - name: Prepare standalone
         run: npm run build:prepare
