@@ -1,5 +1,6 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, dialog } from 'electron';
 import { spawn, ChildProcess } from 'child_process';
+import { autoUpdater } from 'electron-updater';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as http from 'http';
@@ -132,6 +133,44 @@ function createWindow() {
   mainWindow.on('closed', () => { mainWindow = null; });
 }
 
+function initAutoUpdater() {
+  autoUpdater.logger = {
+    info: (msg: any) => log('[updater] ' + msg),
+    warn: (msg: any) => log('[updater WARN] ' + msg),
+    error: (msg: any) => log('[updater ERROR] ' + msg),
+    debug: (msg: any) => log('[updater] ' + msg),
+  } as any;
+
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('update-available', (info: any) => {
+    log('Update beschikbaar: v' + info.version);
+  });
+
+  autoUpdater.on('update-downloaded', (info: any) => {
+    log('Update gedownload: v' + info.version);
+    if (mainWindow) {
+      dialog.showMessageBox(mainWindow, {
+        type: 'info',
+        title: 'Update beschikbaar',
+        message: `Versie ${info.version} is gedownload en wordt geïnstalleerd bij het afsluiten.`,
+        buttons: ['OK', 'Nu herstarten'],
+      }).then((result: any) => {
+        if (result.response === 1) autoUpdater.quitAndInstall();
+      });
+    }
+  });
+
+  autoUpdater.on('error', (err: Error) => {
+    log('Update check fout: ' + err.message);
+  });
+
+  autoUpdater.checkForUpdates().catch((err: Error) => {
+    log('Update check mislukt: ' + err.message);
+  });
+}
+
 // Single instance lock
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
@@ -151,6 +190,7 @@ app.on('ready', async () => {
     ensureDataDir();
     await startServer();
     createWindow();
+    initAutoUpdater();
   } catch (err: any) {
     log('FATAL: ' + err.message);
     app.quit();

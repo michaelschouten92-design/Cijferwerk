@@ -6,5 +6,6 @@ node_modules/
 certs/
 uploads/
 dist-electron/
-build-assets/
+build-assets/*
+!build-assets/icon.svg
 electron/dist/

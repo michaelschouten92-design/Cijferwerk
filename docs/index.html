@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cijferwerk — Gratis boekhouding voor ZZP'ers</title>
+  <meta name="description" content="Eenvoudige, gratis boekhoudapp voor ZZP'ers. Facturen, BTW-aangifte, bank-import en meer. Offline, veilig, en van jou.">
+  <meta property="og:title" content="Cijferwerk — Gratis boekhouding voor ZZP'ers">
+  <meta property="og:description" content="Eenvoudige boekhouding die gewoon werkt. Gratis, offline, en van jou.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <style>
+    :root { --brand: #2563eb; --brand-dark: #1d4ed8; --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-500: #6b7280; --gray-800: #1f2937; --gray-900: #111827; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; color: var(--gray-800); line-height: 1.6; }
+    .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+    /* Hero */
+    .hero { padding: 80px 0 60px; text-align: center; background: linear-gradient(135deg, #eff6ff 0%, #fff 100%); }
+    .hero-logo { width: 72px; height: 72px; margin: 0 auto 24px; }
+    .hero h1 { font-size: 2.5rem; font-weight: 800; color: var(--gray-900); margin-bottom: 12px; }
+    .hero p { font-size: 1.2rem; color: var(--gray-500); max-width: 500px; margin: 0 auto 32px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; background: var(--brand); color: #fff; font-size: 1rem; font-weight: 600; border-radius: 12px; text-decoration: none; transition: background 0.2s; }
+    .btn:hover { background: var(--brand-dark); }
+    .btn-sm { font-size: 0.85rem; padding: 6px 14px; border-radius: 8px; }
+    .hero-sub { margin-top: 16px; font-size: 0.85rem; color: var(--gray-500); }
+
+    /* Features */
+    .features { padding: 60px 0; }
+    .features h2 { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 40px; color: var(--gray-900); }
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; }
+    .feature-card { background: var(--gray-50); border-radius: 16px; padding: 28px 24px; text-align: center; }
+    .feature-icon { font-size: 2rem; margin-bottom: 12px; }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; color: var(--gray-900); }
+    .feature-card p { font-size: 0.9rem; color: var(--gray-500); }
+
+    /* Screenshots */
+    .screenshots { padding: 60px 0; background: var(--gray-50); }
+    .screenshots h2 { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 40px; color: var(--gray-900); }
+    .screenshot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .screenshot-placeholder { background: var(--gray-100); border-radius: 12px; aspect-ratio: 16/10; display: flex; align-items: center; justify-content: center; color: var(--gray-500); font-size: 0.9rem; border: 2px dashed #d1d5db; }
+
+    /* CTA */
+    .cta { padding: 60px 0; text-align: center; }
+    .cta h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 12px; color: var(--gray-900); }
+    .cta p { color: var(--gray-500); margin-bottom: 24px; }
+
+    /* USPs */
+    .usps { display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; margin-top: 32px; }
+    .usp { font-size: 0.85rem; color: var(--gray-500); display: flex; align-items: center; gap: 6px; }
+    .usp-check { color: var(--brand); font-weight: 700; }
+
+    /* Footer */
+    footer { padding: 32px 0; text-align: center; font-size: 0.85rem; color: var(--gray-500); border-top: 1px solid var(--gray-100); }
+    footer a { color: var(--brand); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 1.8rem; }
+      .hero p { font-size: 1rem; }
+      .hero { padding: 48px 0 40px; }
+      .features, .screenshots, .cta { padding: 40px 0; }
+      .usps { gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <div class="container">
+      <img src="icon.svg" alt="Cijferwerk" class="hero-logo">
+      <h1>Cijferwerk</h1>
+      <p>Eenvoudige boekhouding voor ZZP'ers. Gratis, offline, en van jou.</p>
+      <a href="https://github.com/michaelschouten92-design/AlgoStudio-Boekhouding/releases/latest" class="btn">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Download voor Windows
+      </a>
+      <div class="usps">
+        <span class="usp"><span class="usp-check">&#10003;</span> 100% gratis</span>
+        <span class="usp"><span class="usp-check">&#10003;</span> Draait offline</span>
+        <span class="usp"><span class="usp-check">&#10003;</span> Jouw data blijft van jou</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2>Alles wat je nodig hebt, niets wat je niet nodig hebt</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">&#128196;</div>
+          <h3>Facturen</h3>
+          <p>Maak professionele facturen, verstuur ze per e-mail, en houd de status bij.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128200;</div>
+          <h3>BTW-aangifte</h3>
+          <p>Automatische BTW-berekening per kwartaal. Klaar om in te dienen.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#127974;</div>
+          <h3>Bank-import</h3>
+          <p>Importeer transacties van Revolut, ING, Rabo, ABN en Bunq. Automatisch gecategoriseerd.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128218;</div>
+          <h3>Kasboek</h3>
+          <p>Houd contante inkomsten en uitgaven bij. Simpel en overzichtelijk.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screenshots">
+    <div class="container">
+      <h2>Zo ziet het eruit</h2>
+      <div class="screenshot-grid">
+        <div class="screenshot-placeholder">Screenshot: Dashboard</div>
+        <div class="screenshot-placeholder">Screenshot: Facturen</div>
+        <div class="screenshot-placeholder">Screenshot: Transacties</div>
+      </div>
+      <p style="text-align:center;margin-top:16px;font-size:0.8rem;color:var(--gray-500);">Screenshots worden binnenkort toegevoegd</p>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container">
+      <h2>Klaar om te beginnen?</h2>
+      <p>Download Cijferwerk en doe je boekhouding in minuten, niet uren.</p>
+      <a href="https://github.com/michaelschouten92-design/AlgoStudio-Boekhouding/releases/latest" class="btn">Download voor Windows</a>
+      <p class="hero-sub">Windows 10/11 &middot; Geen account nodig &middot; Geen internet vereist</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      Cijferwerk is open source &middot; <a href="https://github.com/michaelschouten92-design/AlgoStudio-Boekhouding">Bekijk op GitHub</a>
+    </div>
+  </footer>
+
+</body>
+</html>
