@@ -9,3 +9,4 @@ dist-electron/
 build-assets/*
 !build-assets/icon.svg
 electron/dist/
+tsconfig.tsbuildinfo
