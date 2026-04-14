@@ -90,7 +90,7 @@ export default function OnboardingPage() {
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div className="col-span-2">
                 <label className="block text-xs text-gray-500 mb-1">Bedrijfsnaam *</label>
-                <input value={form.bedrijfNaam} onChange={e => setForm({ ...form, bedrijfNaam: e.target.value })}
+                <input required value={form.bedrijfNaam} onChange={e => setForm({ ...form, bedrijfNaam: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Jouw Bedrijf" autoFocus />
               </div>
               <div>
@@ -99,35 +99,36 @@ export default function OnboardingPage() {
                   className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">E-mail</label>
-                <input value={form.bedrijfEmail} onChange={e => setForm({ ...form, bedrijfEmail: e.target.value })}
+                <label className="block text-xs text-gray-500 mb-1">E-mail *</label>
+                <input required type="email" value={form.bedrijfEmail} onChange={e => setForm({ ...form, bedrijfEmail: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Adres</label>
-                <input value={form.bedrijfAdres} onChange={e => setForm({ ...form, bedrijfAdres: e.target.value })}
+                <label className="block text-xs text-gray-500 mb-1">Adres *</label>
+                <input required value={form.bedrijfAdres} onChange={e => setForm({ ...form, bedrijfAdres: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Postcode + plaats</label>
-                <input value={form.bedrijfPostcode} onChange={e => setForm({ ...form, bedrijfPostcode: e.target.value })}
+                <label className="block text-xs text-gray-500 mb-1">Postcode + plaats *</label>
+                <input required value={form.bedrijfPostcode} onChange={e => setForm({ ...form, bedrijfPostcode: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">KVK-nummer</label>
-                <input value={form.bedrijfKvk} onChange={e => setForm({ ...form, bedrijfKvk: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <label className="block text-xs text-gray-500 mb-1">KVK-nummer *</label>
+                <input required value={form.bedrijfKvk} onChange={e => setForm({ ...form, bedrijfKvk: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="12345678" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">BTW-nummer</label>
-                <input value={form.bedrijfBtw} onChange={e => setForm({ ...form, bedrijfBtw: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <label className="block text-xs text-gray-500 mb-1">BTW-nummer *</label>
+                <input required value={form.bedrijfBtw} onChange={e => setForm({ ...form, bedrijfBtw: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="NL123456789B01" />
               </div>
               <div className="col-span-2">
-                <label className="block text-xs text-gray-500 mb-1">IBAN</label>
-                <input value={form.bedrijfIban} onChange={e => setForm({ ...form, bedrijfIban: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <label className="block text-xs text-gray-500 mb-1">IBAN *</label>
+                <input required value={form.bedrijfIban} onChange={e => setForm({ ...form, bedrijfIban: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="NL00BANK0123456789" />
               </div>
+              <p className="col-span-2 text-xs text-gray-500">Velden met * zijn verplicht voor geldige NL-facturen (Art. 35a Wet OB).</p>
             </div>
 
             <div className="border-t pt-4 mt-2">

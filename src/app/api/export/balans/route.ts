@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { generateBalansHTML } from '@/lib/export';
 import { genereerBtwAangifte } from '@/lib/btw';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const jaar = parseInt(searchParams.get('jaar') || new Date().getFullYear().toString());
@@ -12,9 +14,9 @@ export async function GET(req: NextRequest) {
   const liquidMiddelen = settings?.rekeningBalans ?? 0;
   const beginVermogen = settings?.beginVermogen ?? 0;
 
-  // Debiteuren: openstaande verkoopfacturen
+  // Debiteuren: openstaande verkoopfacturen tot en met dit jaar
   const openstaand = await prisma.factuur.findMany({
-    where: { status: 'openstaand' },
+    where: { status: 'openstaand', datum: { lt: new Date(jaar + 1, 0, 1) } },
     include: { regels: true },
   });
   const debiteuren = openstaand.reduce((sum, f) => {

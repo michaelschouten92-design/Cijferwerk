@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, ensureMigrated } from '@/lib/db';
 import { genereerFactuurHTML } from '@/lib/invoice-pdf';
+
+export const dynamic = 'force-dynamic';
 
 async function getBedrijfsgegevens() {
   const s = await prisma.appSettings.findFirst({ where: { id: 1 } });
@@ -21,6 +23,7 @@ async function getBedrijfsgegevens() {
 }
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  await ensureMigrated();
   const id = parseInt(params.id);
 
   const factuur = await prisma.factuur.findUnique({

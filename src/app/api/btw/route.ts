@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { berekenJaarOverzicht, berekenMaandOverzicht, genereerBtwAangifte } from '@/lib/btw';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/btw?jaar=2026&weergave=kwartaal
  * weergave: maand | kwartaal | aangifte

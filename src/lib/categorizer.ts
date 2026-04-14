@@ -38,7 +38,7 @@ export async function categoriseer(
   richting: 'inkoop' | 'verkoop'
 ): Promise<CategorisatieResultaat> {
   const regels = await prisma.categorieRegel.findMany({
-    orderBy: { prioriteit: 'desc' },
+    orderBy: [{ prioriteit: 'desc' }, { id: 'asc' }],
   });
 
   const tegenpartijLower = tegenpartij.toLowerCase();

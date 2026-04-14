@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, ensureMigrated } from '@/lib/db';
 import { genereerBtwAangifte } from '@/lib/btw';
 import { generateTransactieCSV, generateBtwAangifteHTML, generateWinstVerliesHTML, generateBalansHTML } from '@/lib/export';
 import { genereerFactuurHTML } from '@/lib/invoice-pdf';
@@ -7,11 +7,14 @@ import { berekenAfschrijvingen } from '@/lib/calculations';
 import archiver from 'archiver';
 import { PassThrough } from 'stream';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/export/jaarafsluiting?jaar=2026
  * Genereert een ZIP met alle boekhoudbestanden voor de boekhouder
  */
 export async function GET(req: NextRequest) {
+  await ensureMigrated();
   const { searchParams } = new URL(req.url);
   const jaar = parseInt(searchParams.get('jaar') || new Date().getFullYear().toString());
 
@@ -73,9 +76,9 @@ export async function GET(req: NextRequest) {
     return s + a.aanschafWaarde - Math.min(Math.max(0, (jaarAfschr / 12) * maanden), afschrijfbaar);
   }, 0);
 
-  // Debiteuren: openstaande verkoopfacturen
+  // Debiteuren: openstaande verkoopfacturen tot en met dit jaar
   const openstaand = await prisma.factuur.findMany({
-    where: { status: 'openstaand' },
+    where: { status: 'openstaand', datum: { lt: new Date(jaar + 1, 0, 1) } },
     include: { regels: true },
   });
   const debiteuren = round2(openstaand.reduce((sum, f) => {

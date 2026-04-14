@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const relaties = await prisma.relatie.findMany({
     orderBy: { naam: 'asc' },

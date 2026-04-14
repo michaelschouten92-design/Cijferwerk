@@ -3,6 +3,8 @@ import { genereerBtwAangifte } from '@/lib/btw';
 import { generateBtwAangifteHTML } from '@/lib/export';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const jaar = parseInt(searchParams.get('jaar') || new Date().getFullYear().toString());

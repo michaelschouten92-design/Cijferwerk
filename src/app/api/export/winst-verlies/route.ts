@@ -4,6 +4,8 @@ import { generateWinstVerliesHTML } from '@/lib/export';
 import type { WinstVerliesData } from '@/lib/export';
 import { berekenAfschrijvingen } from '@/lib/calculations';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const jaar = parseInt(searchParams.get('jaar') || new Date().getFullYear().toString());

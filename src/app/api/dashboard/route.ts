@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, ensureMigrated } from '@/lib/db';
 import { genereerBtwAangifte } from '@/lib/btw';
 import { berekenAfschrijvingen, round2 } from '@/lib/calculations';
+
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/dashboard?jaar=2026 - Dashboard overzichtsdata
  */
 export async function GET(req: NextRequest) {
+  await ensureMigrated();
   const { searchParams } = new URL(req.url);
   const jaar = parseInt(searchParams.get('jaar') || new Date().getFullYear().toString());
 

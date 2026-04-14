@@ -57,23 +57,25 @@ export default function FacturenPage() {
   const [zoek, setZoek] = useState('');
 
   function load() {
-    fetch('/api/invoices').then(r => r.json()).then(setFacturen);
-    fetch('/api/sjablonen').then(r => r.json()).then(setSjablonen);
+    fetch('/api/invoices').then(r => r.ok ? r.json() : Promise.reject(r.status)).then(setFacturen).catch(() => {});
+    fetch('/api/sjablonen').then(r => r.ok ? r.json() : Promise.reject(r.status)).then(setSjablonen).catch(() => {});
   }
 
   useEffect(() => { load(); }, []);
 
   async function genereerVanSjabloon(sjabloonId: number) {
-    await fetch('/api/sjablonen/genereer', {
+    const res = await fetch('/api/sjablonen/genereer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sjabloonId }),
     });
+    if (!res.ok) { alert('Genereren mislukt'); return; }
     load();
   }
 
   async function verwijderSjabloon(id: number) {
-    await fetch(`/api/sjablonen?id=${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/sjablonen?id=${id}`, { method: 'DELETE' });
+    if (!res.ok) { alert('Verwijderen mislukt'); return; }
     load();
   }
 
@@ -84,9 +86,9 @@ export default function FacturenPage() {
       alert(`Er bestaat al een creditnota voor factuur ${f.nummer} (${bestaandeCreditnota.nummer}).`);
       return;
     }
-    if (!confirm(`Creditnota aanmaken voor factuur ${f.nummer}?\n\nDit maakt een nieuwe factuur aan met negatieve bedragen.`)) return;
+    if (!confirm(`Creditnota aanmaken voor factuur ${f.nummer}?\n\nDit maakt een nieuwe factuur met negatieve bedragen én markeert de originele factuur ${f.nummer} als betaald. Doorgaan?`)) return;
     const creditNummer = `C-${f.nummer}`;
-    await fetch('/api/invoices', {
+    const r1 = await fetch('/api/invoices', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -103,12 +105,14 @@ export default function FacturenPage() {
         })),
       }),
     });
+    if (!r1.ok) { alert('Creditnota aanmaken mislukt'); return; }
     // Originele factuur als betaald markeren
-    await fetch('/api/invoices', {
+    const r2 = await fetch('/api/invoices', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: f.id, status: 'betaald' }),
     });
+    if (!r2.ok) alert('Waarschuwing: originele factuur kon niet als betaald gemarkeerd worden');
     load();
   }
 
@@ -345,12 +349,13 @@ function MarkeerBetaaldModal({ factuur, onClose, onSave }: { factuur: Factuur; o
 
   async function handleMarkeer() {
     setSaving(true);
-    await fetch('/api/invoices', {
+    const res = await fetch('/api/invoices', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: factuur.id, status: 'betaald' }),
     });
     setSaving(false);
+    if (!res.ok) { alert('Bijwerken mislukt'); return; }
     onSave();
     onClose();
   }
@@ -529,6 +534,13 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
       </div>
 
       <h4 className="text-sm font-medium text-gray-700 mb-2">Regels</h4>
+      <div className="grid grid-cols-12 gap-2 text-xs text-gray-400 mb-1 px-2">
+        <div className="col-span-1 text-center">#</div>
+        <div className="col-span-5">Omschrijving</div>
+        <div className="col-span-2">Prijs excl. BTW</div>
+        <div className="col-span-2">BTW</div>
+        <div className="col-span-1 text-right">Totaal</div>
+      </div>
       {form.regels.map((r, i) => (
         <div key={i} className="grid grid-cols-12 gap-2 mb-2 items-center">
           <input type="number" min={1} value={r.aantal} onChange={e => updateRegel(i, 'aantal', parseInt(e.target.value) || 1)}
@@ -536,7 +548,7 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
           <input type="text" value={r.beschrijving} onChange={e => updateRegel(i, 'beschrijving', e.target.value)}
             className="col-span-5 px-3 py-2 border rounded-lg text-sm" placeholder="Omschrijving" />
           <input type="number" step="0.01" min={0} value={r.stuksprijs || ''} onChange={e => updateRegel(i, 'stuksprijs', parseFloat(e.target.value) || 0)}
-            className="col-span-2 px-3 py-2 border rounded-lg text-sm" placeholder="Prijs" />
+            className="col-span-2 px-3 py-2 border rounded-lg text-sm" placeholder="Excl. BTW" />
           <select value={r.btwPercentage} onChange={e => updateRegel(i, 'btwPercentage', parseFloat(e.target.value))}
             className="col-span-2 px-2 py-2 border rounded-lg text-sm">
             <option value={0.21}>21%</option>

@@ -265,8 +265,8 @@ export default function TransactiesPage() {
                   <th className="px-4 py-3">Datum</th>
                   <th className="px-4 py-3">Omschrijving</th>
                   <th className="px-4 py-3">Categorie</th>
-                  <th className="px-4 py-3 text-right">Bedrag</th>
-                  <th className="px-4 py-3 text-right">BTW</th>
+                  <th className="px-4 py-3 text-right">Totaal (incl.)</th>
+                  <th className="px-4 py-3 text-right">waarvan BTW</th>
                   <th className="px-4 py-3">Status</th>
                 </tr>
               </thead>
@@ -291,7 +291,7 @@ export default function TransactiesPage() {
                       {tx.richting === 'verkoop' ? '+' : '-'}{formatEuro(tx.bedragExclBtw + tx.btwBedrag)}
                     </td>
                     <td className="px-4 py-3 text-right text-gray-500 tabular-nums">
-                      {tx.btwBedrag > 0 ? formatEuro(tx.btwBedrag) : '-'}
+                      {tx.btwBedrag > 0 ? formatEuro(tx.btwBedrag) : <span className="text-gray-400">0%</span>}
                     </td>
                     <td className="px-4 py-3">
                       {tx.factuur && <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs mr-1">{tx.factuur.nummer}</span>}
@@ -480,23 +480,35 @@ function AddTransactionForm({ onSave }: { onSave: () => void }) {
   const [form, setForm] = useState({
     datum: new Date().toISOString().split('T')[0],
     omschrijving: '',
-    bedragExclBtw: '',
+    bruto: '',
     btwPercentage: '0.21',
     richting: 'inkoop',
   });
 
+  const brutoNum = parseFloat(form.bruto) || 0;
+  const pct = parseFloat(form.btwPercentage);
+  const excl = pct === 0 ? brutoNum : Math.round((brutoNum / (1 + pct)) * 100) / 100;
+  const btwBedrag = Math.round((brutoNum - excl) * 100) / 100;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const bedrag = parseFloat(form.bedragExclBtw);
-    const btw = parseFloat(form.btwPercentage);
-    await fetch('/api/transactions', {
+    const res = await fetch('/api/transactions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        ...form, bedragExclBtw: bedrag, btwPercentage: btw,
-        btwBedrag: Math.round(bedrag * btw * 100) / 100,
+        datum: form.datum,
+        omschrijving: form.omschrijving,
+        richting: form.richting,
+        bedragExclBtw: excl,
+        btwPercentage: pct,
+        btwBedrag,
       }),
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(err.error || 'Opslaan mislukt');
+      return;
+    }
     onSave();
   }
 
@@ -523,9 +535,10 @@ function AddTransactionForm({ onSave }: { onSave: () => void }) {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Bedrag excl. BTW</label>
-          <input type="number" step="0.01" min="0.01" value={form.bedragExclBtw} onChange={e => setForm({ ...form, bedragExclBtw: e.target.value })}
-            className="w-full px-3 py-2 border rounded-lg text-sm" required />
+          <label className="block text-sm text-gray-600 mb-1">Bankbedrag (incl. BTW)</label>
+          <input type="number" step="0.01" min="0.01" value={form.bruto} onChange={e => setForm({ ...form, bruto: e.target.value })}
+            className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Wat op de bank stond" required />
+          {brutoNum > 0 && <p className="text-xs text-gray-400 mt-1">Excl: {formatEuro(excl)} &middot; BTW: {formatEuro(btwBedrag)}</p>}
         </div>
         <div>
           <label className="block text-sm text-gray-600 mb-1">BTW tarief</label>

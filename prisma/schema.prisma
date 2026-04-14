@@ -41,8 +41,8 @@ model Categorie {
   code         String        @unique // 4500, 4550, 8000, etc.
   naam         String        // Contributies en abonnementen, Bankkosten, etc.
   type         String        // kosten | omzet | balans
-  btwTarief    Float         @default(0.21) // 0.21, 0.09, 0
-  btwVrijgesteld Boolean     @default(false)
+  btwTarief    Float         @default(0.21) // 0.21, 0.09, 0 — bron van waarheid; 0 = vrijgesteld/0%
+  btwVrijgesteld Boolean     @default(false) // legacy veld, niet gebruikt in logica (zie btwTarief === 0)
   transacties  Transactie[]
 }
 

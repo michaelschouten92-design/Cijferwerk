@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { parseBankBestand } from '@/lib/bank-import';
 import { categoriseerEnSlaOp } from '@/lib/categorizer';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/import — Sync-geschiedenis ophalen
  */

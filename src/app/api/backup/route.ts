@@ -6,6 +6,8 @@ import { PassThrough } from 'stream';
 import { DB_PATH, UPLOADS_DIR } from '@/lib/paths';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/backup — Download volledige back-up (database + bijlagen) als ZIP
  */

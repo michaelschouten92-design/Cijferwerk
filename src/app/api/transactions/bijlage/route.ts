@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { UPLOADS_DIR } from '@/lib/paths';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/transactions/bijlage?id=123 — Download bijlage
  */

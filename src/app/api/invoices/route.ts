@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { genereerFactuurHTML } from '@/lib/invoice-pdf';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/invoices - Lijst alle facturen
  */
@@ -31,41 +33,49 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Minimaal één regel met omschrijving en prijs > 0' }, { status: 400 });
   }
 
-  // Server-side factuurnummer genereren als het geen creditnota is
-  let nummer = body.nummer;
-  if (!body.creditVanId) {
-    const jaar = new Date(body.datum).getFullYear();
-    const prefix = `${jaar}-`;
+  // Server-side factuurnummer genereren met retry bij race condition
+  const jaar = new Date(body.datum).getFullYear();
+  const prefix = `${jaar}-`;
+  const regelsData = geldigeRegels.map((r: any) => ({
+    aantal: Math.max(1, r.aantal || 1),
+    beschrijving: r.beschrijving.trim(),
+    stuksprijs: Math.abs(r.stuksprijs),
+    btwPercentage: r.btwPercentage ?? 0.21,
+  }));
+
+  async function genereerNummer(): Promise<string> {
     const bestaande = await prisma.factuur.findMany({
       where: { nummer: { startsWith: prefix } },
       select: { nummer: true },
-      orderBy: { nummer: 'desc' },
     });
-    const hoogste = bestaande.reduce((max, f) => {
+    const hoogste = bestaande.reduce((max: number, f: any) => {
       const n = parseInt(f.nummer.replace(prefix, '')) || 0;
       return n > max ? n : max;
     }, 0);
-    nummer = `${prefix}${String(hoogste + 1).padStart(2, '0')}`;
+    return `${prefix}${String(hoogste + 1).padStart(2, '0')}`;
   }
 
-  const factuur = await prisma.factuur.create({
-    data: {
-      nummer,
-      datum: new Date(body.datum),
-      vervaldatum: new Date(body.vervaldatum),
-      relatieId: body.relatieId,
-      creditVanId: body.creditVanId ?? null,
-      regels: {
-        create: geldigeRegels.map((r: any) => ({
-          aantal: Math.max(1, r.aantal || 1),
-          beschrijving: r.beschrijving.trim(),
-          stuksprijs: Math.abs(r.stuksprijs),
-          btwPercentage: r.btwPercentage ?? 0.21,
-        })),
-      },
-    },
-    include: { relatie: true, regels: true },
-  });
+  let factuur: any;
+  for (let poging = 0; poging < 3; poging++) {
+    const nummer = body.creditVanId ? body.nummer : await genereerNummer();
+    try {
+      factuur = await prisma.factuur.create({
+        data: {
+          nummer,
+          datum: new Date(body.datum),
+          vervaldatum: new Date(body.vervaldatum),
+          relatieId: body.relatieId,
+          creditVanId: body.creditVanId ?? null,
+          regels: { create: regelsData },
+        },
+        include: { relatie: true, regels: true },
+      });
+      break;
+    } catch (e: any) {
+      if (e.code === 'P2002' && !body.creditVanId && poging < 2) continue; // race, probeer opnieuw
+      throw e;
+    }
+  }
 
   return NextResponse.json(factuur);
 }
@@ -112,6 +122,11 @@ export async function DELETE(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const body = await req.json();
   const { id, ...data } = body;
+
+  // Status validatie: alleen 'openstaand' of 'betaald' toegestaan
+  if (data.status !== undefined && !['openstaand', 'betaald'].includes(data.status)) {
+    return NextResponse.json({ error: 'Ongeldige status' }, { status: 400 });
+  }
 
   // Haal huidige factuur op voor lock-check en audit trail
   const huidig = await prisma.factuur.findUnique({

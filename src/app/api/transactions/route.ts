@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/transactions - Haal transacties op met filters
  * Query params: richting, jaar, maand, gecategoriseerd
@@ -83,6 +85,11 @@ export async function PUT(req: NextRequest) {
   try {
   const body = await req.json();
   const { id, ...data } = body;
+
+  // Validatie
+  if (data.richting !== undefined && !['inkoop', 'verkoop'].includes(data.richting)) {
+    return NextResponse.json({ error: 'Richting moet inkoop of verkoop zijn' }, { status: 400 });
+  }
 
   // Haal huidige waarden op voor audit trail
   const huidig = await prisma.transactie.findUnique({ where: { id } });

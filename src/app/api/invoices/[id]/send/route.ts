@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, ensureMigrated } from '@/lib/db';
 import { genereerFactuurHTML } from '@/lib/invoice-pdf';
 import * as nodemailer from 'nodemailer';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  await ensureMigrated();
   const id = parseInt(params.id);
   const body = await req.json();
   const { to, bericht } = body;
@@ -13,6 +16,14 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const settings = await prisma.appSettings.findFirst({ where: { id: 1 } });
   if (!settings?.smtpHost || !settings?.smtpUser || !settings?.smtpPass) {
     return NextResponse.json({ error: 'SMTP is niet geconfigureerd. Ga naar Instellingen.' }, { status: 400 });
+  }
+  const ontbrekend: string[] = [];
+  if (!settings.bedrijfNaam) ontbrekend.push('bedrijfsnaam');
+  if (!settings.bedrijfKvk) ontbrekend.push('KvK-nummer');
+  if (!settings.bedrijfBtw) ontbrekend.push('BTW-nummer');
+  if (!settings.bedrijfIban) ontbrekend.push('IBAN');
+  if (ontbrekend.length > 0) {
+    return NextResponse.json({ error: `Vul eerst je ${ontbrekend.join(', ')} in bij Instellingen — verplicht voor NL-facturen.` }, { status: 400 });
   }
 
   const factuur = await prisma.factuur.findUnique({
