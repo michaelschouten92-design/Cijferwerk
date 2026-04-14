@@ -90,11 +90,14 @@ export default function TransactiesPage() {
     setProcessingId(txId);
     setRemovingId(txId);
 
-    const btwBedrag = Math.round(tx.bedragExclBtw * btwTarief * 100) / 100;
+    // Behoud brutobedrag (bank realiteit); reken terug naar excl + BTW
+    const bruto = tx.bedragExclBtw + tx.btwBedrag;
+    const nieuwExcl = btwTarief === 0 ? bruto : Math.round((bruto / (1 + btwTarief)) * 100) / 100;
+    const btwBedrag = Math.round((bruto - nieuwExcl) * 100) / 100;
     await fetch('/api/transactions', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: txId, categorieId, btwPercentage: btwTarief, btwBedrag }),
+      body: JSON.stringify({ id: txId, categorieId, btwPercentage: btwTarief, bedragExclBtw: nieuwExcl, btwBedrag }),
     });
 
     // Auto-regel aanmaken
@@ -340,14 +343,17 @@ function EditTransactionModal({ tx, categorieen, relaties, onClose, onSave, onDe
   async function handleSave() {
     setSaving(true);
     const btwPercentage = parseFloat(form.btwPercentage);
-    const btwBedrag = Math.round(tx.bedragExclBtw * btwPercentage * 100) / 100;
+    // Behoud brutobedrag (bank realiteit); reken terug naar excl + BTW
+    const bruto = tx.bedragExclBtw + tx.btwBedrag;
+    const nieuwExcl = btwPercentage === 0 ? bruto : Math.round((bruto / (1 + btwPercentage)) * 100) / 100;
+    const btwBedrag = Math.round((bruto - nieuwExcl) * 100) / 100;
     await fetch('/api/transactions', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id: tx.id,
         omschrijving: form.omschrijving,
-        btwPercentage, btwBedrag,
+        btwPercentage, bedragExclBtw: nieuwExcl, btwBedrag,
         categorieId: form.categorieId ? parseInt(form.categorieId) : null,
         relatieId: form.relatieId ? parseInt(form.relatieId) : null,
       }),
@@ -392,7 +398,13 @@ function EditTransactionModal({ tx, categorieen, relaties, onClose, onSave, onDe
               <option value="0">Geen BTW (0%)</option>
             </select>
             <p className="text-xs text-gray-400 mt-1">
-              BTW bedrag: {formatEuro(tx.bedragExclBtw * parseFloat(form.btwPercentage))}
+              {(() => {
+                const pct = parseFloat(form.btwPercentage);
+                const bruto = tx.bedragExclBtw + tx.btwBedrag;
+                const excl = pct === 0 ? bruto : Math.round((bruto / (1 + pct)) * 100) / 100;
+                const btw = Math.round((bruto - excl) * 100) / 100;
+                return `Excl. BTW: ${formatEuro(excl)} — BTW: ${formatEuro(btw)} — Totaal: ${formatEuro(bruto)}`;
+              })()}
             </p>
           </div>
 

@@ -89,10 +89,21 @@ export async function PUT(req: NextRequest) {
 
   if (data.datum) data.datum = new Date(data.datum);
 
-  // BTW server-side herberekenen als percentage wijzigt
+  // BTW server-side herberekenen als percentage wijzigt.
+  // Het bankbedrag is altijd inclusief BTW — bij wijziging van het percentage
+  // houden we het brutobedrag constant en rekenen terug naar excl + BTW.
   if (data.btwPercentage !== undefined && huidig) {
-    const bedrag = data.bedragExclBtw ?? huidig.bedragExclBtw;
-    data.btwBedrag = Math.round(bedrag * data.btwPercentage * 100) / 100;
+    if (data.bedragExclBtw !== undefined) {
+      // Gebruiker heeft zelf een excl bedrag ingevuld — respecteer dat
+      data.btwBedrag = Math.round(data.bedragExclBtw * data.btwPercentage * 100) / 100;
+    } else {
+      // Alleen percentage gewijzigd — houd het brutobedrag (excl + btw) constant
+      const bruto = huidig.bedragExclBtw + huidig.btwBedrag;
+      const nieuwExcl = data.btwPercentage === 0 ? bruto : Math.round((bruto / (1 + data.btwPercentage)) * 100) / 100;
+      const nieuwBtw = Math.round((bruto - nieuwExcl) * 100) / 100;
+      data.bedragExclBtw = nieuwExcl;
+      data.btwBedrag = nieuwBtw;
+    }
   }
 
   const transactie = await prisma.transactie.update({
