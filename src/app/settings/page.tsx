@@ -143,9 +143,13 @@ function BedrijfsSection() {
   async function handleSave() {
     setSaving(true); setMsg(null);
     try {
-      await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+      const res = await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Opslaan mislukt (${res.status})`);
+      }
       setMsg({ type: 'success', text: 'Opgeslagen!' }); setDirty(false); setTimeout(() => setMsg(null), 3000);
-    } catch (e: any) { setMsg({ type: 'error', text: e.message }); }
+    } catch (e: any) { setMsg({ type: 'error', text: e.message || 'Opslaan mislukt' }); }
     setSaving(false);
   }
 

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, ensureMigrated } from '@/lib/db';
 
+// Force dynamic — voorkom statische prerendering zodat PUT werkt
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   await ensureMigrated();
   const settings = await prisma.appSettings.upsert({
