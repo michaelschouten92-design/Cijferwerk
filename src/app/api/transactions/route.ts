@@ -141,6 +141,15 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = parseInt(searchParams.get('id') || '0');
+  const all = searchParams.get('all') === 'true';
+
+  // Bulk delete: alle transacties wissen (voor re-import)
+  if (all) {
+    const count = await prisma.transactie.count();
+    await prisma.wijzigingLog.deleteMany({});
+    await prisma.transactie.deleteMany({});
+    return NextResponse.json({ success: true, deleted: count });
+  }
 
   if (!id) {
     return NextResponse.json({ error: 'ID is verplicht' }, { status: 400 });

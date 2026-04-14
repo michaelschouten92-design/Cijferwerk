@@ -95,6 +95,9 @@ export default function SettingsPage() {
       {/* Back-up */}
       <BackupSection />
 
+      {/* Reset transacties */}
+      <ResetTransactiesSection />
+
       {/* SMTP E-mail */}
       <SmtpSection />
       </div>)}
@@ -247,6 +250,43 @@ function BackupSection() {
         <label className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 cursor-pointer ${restoring ? 'opacity-50' : ''}`}><Upload className="w-4 h-4" /> Herstel back-up<input type="file" accept=".db,.zip" onChange={handleRestore} className="hidden" disabled={restoring} /></label>
       </div>
       {result && <div className={`mt-3 p-3 rounded-lg text-sm ${result.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{result.text}</div>}
+    </div>
+  );
+}
+
+function ResetTransactiesSection() {
+  const [confirming, setConfirming] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  async function handleReset() {
+    setResetting(true); setMsg(null);
+    try {
+      const res = await fetch('/api/transactions?all=true', { method: 'DELETE' });
+      if (!res.ok) throw new Error('Verwijderen mislukt');
+      const data = await res.json();
+      setMsg({ type: 'success', text: `${data.deleted} transactie(s) verwijderd. Je kunt nu opnieuw importeren.` });
+      setConfirming(false);
+    } catch (e: any) { setMsg({ type: 'error', text: e.message }); }
+    setResetting(false);
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-card p-6 mb-6 border border-red-100">
+      <h3 className="font-semibold text-red-700 mb-2">Transacties resetten</h3>
+      <p className="text-sm text-gray-500 mb-4">Verwijder alle transacties uit Cijferwerk. Gebruik dit als je opnieuw wilt importeren (bijvoorbeeld na een BTW-correctie). Facturen, relaties en categorieën blijven staan.</p>
+      {!confirming ? (
+        <button onClick={() => setConfirming(true)} className="px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors">Alle transacties verwijderen</button>
+      ) : (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-700 font-medium mb-3">Weet je het zeker? Alle transacties worden permanent verwijderd.</p>
+          <div className="flex gap-2">
+            <button onClick={handleReset} disabled={resetting} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50">{resetting ? 'Bezig...' : 'Ja, verwijder alles'}</button>
+            <button onClick={() => setConfirming(false)} disabled={resetting} className="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50">Annuleer</button>
+          </div>
+        </div>
+      )}
+      {msg && <div className={`mt-3 p-3 rounded-lg text-sm ${msg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{msg.text}</div>}
     </div>
   );
 }
