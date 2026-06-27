@@ -35,6 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const child_process_1 = require("child_process");
+const electron_updater_1 = require("electron-updater");
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs"));
 const http = __importStar(require("http"));
@@ -148,6 +149,39 @@ function createWindow() {
     mainWindow.loadURL(`http://127.0.0.1:${PORT}`);
     mainWindow.on('closed', () => { mainWindow = null; });
 }
+function initAutoUpdater() {
+    electron_updater_1.autoUpdater.logger = {
+        info: (msg) => log('[updater] ' + msg),
+        warn: (msg) => log('[updater WARN] ' + msg),
+        error: (msg) => log('[updater ERROR] ' + msg),
+        debug: (msg) => log('[updater] ' + msg),
+    };
+    electron_updater_1.autoUpdater.autoDownload = true;
+    electron_updater_1.autoUpdater.autoInstallOnAppQuit = true;
+    electron_updater_1.autoUpdater.on('update-available', (info) => {
+        log('Update beschikbaar: v' + info.version);
+    });
+    electron_updater_1.autoUpdater.on('update-downloaded', (info) => {
+        log('Update gedownload: v' + info.version);
+        if (mainWindow) {
+            electron_1.dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'Update beschikbaar',
+                message: `Versie ${info.version} is gedownload en wordt geïnstalleerd bij het afsluiten.`,
+                buttons: ['OK', 'Nu herstarten'],
+            }).then((result) => {
+                if (result.response === 1)
+                    electron_updater_1.autoUpdater.quitAndInstall();
+            });
+        }
+    });
+    electron_updater_1.autoUpdater.on('error', (err) => {
+        log('Update check fout: ' + err.message);
+    });
+    electron_updater_1.autoUpdater.checkForUpdates().catch((err) => {
+        log('Update check mislukt: ' + err.message);
+    });
+}
 // Single instance lock
 const gotLock = electron_1.app.requestSingleInstanceLock();
 if (!gotLock) {
@@ -168,6 +202,7 @@ electron_1.app.on('ready', async () => {
         ensureDataDir();
         await startServer();
         createWindow();
+        initAutoUpdater();
     }
     catch (err) {
         log('FATAL: ' + err.message);
