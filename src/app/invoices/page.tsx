@@ -1,6 +1,6 @@
 'use client';
 
-import { formatEuro } from '@/lib/format';
+import { formatEuro, parsePrijs } from '@/lib/format';
 import { useUnsavedWarning, useEscapeKey } from '@/lib/useUnsavedWarning';
 import { useEffect, useState } from 'react';
 import { FileText, Send, X, CheckCircle, Trash2, RotateCcw, RefreshCw, Link2, Search } from 'lucide-react';
@@ -446,10 +446,10 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
     datum: new Date().toISOString().split('T')[0],
     vervaldatum: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
     relatieId: '',
-    regels: [{ aantal: 1, beschrijving: '', stuksprijs: 0, btwPercentage: 0.21 }],
+    regels: [{ aantal: 1, beschrijving: '', stuksprijs: '', btwPercentage: 0.21 }],
   });
   const [relaties, setRelaties] = useState<Relatie[]>([]);
-  const isDirty = form.regels.some(r => r.beschrijving.trim() || r.stuksprijs > 0) || form.relatieId !== '';
+  const isDirty = form.regels.some(r => r.beschrijving.trim() || parsePrijs(r.stuksprijs) > 0) || form.relatieId !== '';
   useUnsavedWarning(isDirty);
 
   useEffect(() => {
@@ -467,7 +467,7 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
   }, []);
 
   function addRegel() {
-    setForm({ ...form, regels: [...form.regels, { aantal: 1, beschrijving: '', stuksprijs: 0, btwPercentage: 0.21 }] });
+    setForm({ ...form, regels: [...form.regels, { aantal: 1, beschrijving: '', stuksprijs: '', btwPercentage: 0.21 }] });
   }
 
   function removeRegel(i: number) {
@@ -481,15 +481,17 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
     setForm({ ...form, regels });
   }
 
-  const subtotaal = form.regels.reduce((s, r) => s + Math.round(r.aantal * (r.stuksprijs || 0) * 100) / 100, 0);
+  const subtotaal = form.regels.reduce((s, r) => s + Math.round(r.aantal * parsePrijs(r.stuksprijs) * 100) / 100, 0);
   const btwTotaal = form.regels.reduce((s, r) => {
-    const excl = Math.round(r.aantal * (r.stuksprijs || 0) * 100) / 100;
+    const excl = Math.round(r.aantal * parsePrijs(r.stuksprijs) * 100) / 100;
     return s + Math.round(excl * r.btwPercentage * 100) / 100;
   }, 0);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const geldigeRegels = form.regels.filter(r => r.beschrijving.trim() && r.stuksprijs > 0);
+    const geldigeRegels = form.regels
+      .filter(r => r.beschrijving.trim() && parsePrijs(r.stuksprijs) > 0)
+      .map(r => ({ ...r, stuksprijs: parsePrijs(r.stuksprijs) }));
     if (geldigeRegels.length === 0) {
       alert('Voeg minimaal één regel toe met een omschrijving en prijs groter dan 0.');
       return;
@@ -547,7 +549,7 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
             className="col-span-1 px-2 py-2 border rounded-lg text-sm text-center" placeholder="#" />
           <input type="text" value={r.beschrijving} onChange={e => updateRegel(i, 'beschrijving', e.target.value)}
             className="col-span-5 px-3 py-2 border rounded-lg text-sm" placeholder="Omschrijving" />
-          <input type="number" step="0.01" min={0} value={r.stuksprijs || ''} onChange={e => updateRegel(i, 'stuksprijs', parseFloat(e.target.value) || 0)}
+          <input type="text" inputMode="decimal" value={r.stuksprijs} onChange={e => updateRegel(i, 'stuksprijs', e.target.value.replace(/[^0-9.,]/g, ''))}
             className="col-span-2 px-3 py-2 border rounded-lg text-sm" placeholder="Excl. BTW" />
           <select value={r.btwPercentage} onChange={e => updateRegel(i, 'btwPercentage', parseFloat(e.target.value))}
             className="col-span-2 px-2 py-2 border rounded-lg text-sm">
@@ -556,7 +558,7 @@ function NewInvoiceForm({ onSave }: { onSave: () => void }) {
             <option value={0}>0%</option>
           </select>
           <div className="col-span-1 text-right text-sm text-gray-500">
-            {formatEuro(Math.round(r.aantal * (r.stuksprijs || 0) * 100) / 100)}
+            {formatEuro(Math.round(r.aantal * parsePrijs(r.stuksprijs) * 100) / 100)}
           </div>
           <button type="button" onClick={() => removeRegel(i)}
             className="col-span-1 text-gray-300 hover:text-red-500 text-center">
@@ -591,7 +593,7 @@ function SjabloonForm({ onSave, onCancel }: { onSave: () => void; onCancel: () =
     relatieId: '',
     interval: 'maandelijks',
     volgendeDatum: new Date().toISOString().split('T')[0],
-    regels: [{ aantal: 1, beschrijving: '', stuksprijs: 0, btwPercentage: 0.21 }],
+    regels: [{ aantal: 1, beschrijving: '', stuksprijs: '', btwPercentage: 0.21 }],
   });
 
   useEffect(() => {
@@ -609,7 +611,11 @@ function SjabloonForm({ onSave, onCancel }: { onSave: () => void; onCancel: () =
     await fetch('/api/sjablonen', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, relatieId: parseInt(form.relatieId) }),
+      body: JSON.stringify({
+        ...form,
+        regels: form.regels.map(r => ({ ...r, stuksprijs: parsePrijs(r.stuksprijs) })),
+        relatieId: parseInt(form.relatieId),
+      }),
     });
     onSave();
   }
@@ -656,7 +662,7 @@ function SjabloonForm({ onSave, onCancel }: { onSave: () => void; onCancel: () =
             className="col-span-1 px-2 py-1.5 border rounded text-sm text-center" />
           <input value={r.beschrijving} onChange={e => updateRegel(i, 'beschrijving', e.target.value)}
             className="col-span-5 px-2 py-1.5 border rounded text-sm" placeholder="Omschrijving" />
-          <input type="number" step="0.01" min={0} value={r.stuksprijs || ''} onChange={e => updateRegel(i, 'stuksprijs', parseFloat(e.target.value) || 0)}
+          <input type="text" inputMode="decimal" value={r.stuksprijs} onChange={e => updateRegel(i, 'stuksprijs', e.target.value.replace(/[^0-9.,]/g, ''))}
             className="col-span-3 px-2 py-1.5 border rounded text-sm" placeholder="Prijs" />
           <select value={r.btwPercentage} onChange={e => updateRegel(i, 'btwPercentage', parseFloat(e.target.value))}
             className="col-span-3 px-2 py-1.5 border rounded text-sm">
@@ -666,7 +672,7 @@ function SjabloonForm({ onSave, onCancel }: { onSave: () => void; onCancel: () =
           </select>
         </div>
       ))}
-      <button type="button" onClick={() => setForm({ ...form, regels: [...form.regels, { aantal: 1, beschrijving: '', stuksprijs: 0, btwPercentage: 0.21 }] })}
+      <button type="button" onClick={() => setForm({ ...form, regels: [...form.regels, { aantal: 1, beschrijving: '', stuksprijs: '', btwPercentage: 0.21 }] })}
         className="text-brand-600 text-sm hover:text-brand-800 mb-3">+ Regel</button>
 
       <div className="flex justify-end gap-2">
